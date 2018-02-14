@@ -48,6 +48,8 @@ var ReflowableView = function(options, reader){
     var _bookStyles = options.bookStyles;
     var _iframeLoader = options.iframeLoader;
 
+    var _expandDocumentFullWidth = options.expandDocumentFullWidth;
+
     var _currentSpineItem;
     var _isWaitingFrameRender = false;
     var _deferredPageRequest;
@@ -78,7 +80,7 @@ var ReflowableView = function(options, reader){
         height: undefined
     };
 
-    var _lastBodySize = {
+    var _lastDocumentSize = {
         width: undefined,
         height: undefined
     };
@@ -595,6 +597,24 @@ var ReflowableView = function(options, reader){
         return false;
     }
 
+    function updateDocumentSize() {
+        var documentElement = _$epubHtml[0];
+
+        var newDocumentSize = {
+            width: documentElement.scrollWidth,
+            height: documentElement.scrollHeight
+        };
+
+        if (newDocumentSize.width != _lastDocumentSize.width || newDocumentSize.height != _lastDocumentSize.height) {
+            _lastDocumentSize.width = newDocumentSize.width;
+            _lastDocumentSize.height = newDocumentSize.height;
+
+            return true;
+        }
+
+        return false;
+    }
+
     function onPaginationChanged_(initiator, paginationRequest_spineItem, paginationRequest_elementId) {
         _paginationInfo.currentPageIndex = _paginationInfo.currentSpreadIndex * _paginationInfo.visibleColumnCount;
         _paginationInfo.pageOffset = (_paginationInfo.columnWidth + _paginationInfo.columnGap) * _paginationInfo.visibleColumnCount * _paginationInfo.currentSpreadIndex;
@@ -881,6 +901,12 @@ var ReflowableView = function(options, reader){
 
         }
 
+        updateDocumentSize();
+
+        if (_expandDocumentFullWidth) {
+            _$iframe.width(_lastDocumentSize.width);
+        }
+        
         // Only initializes the resize sensor once the content has been paginated once,
         // to avoid the pagination process to trigger a resize event during its first
         // execution, provoking a flicker
@@ -894,24 +920,12 @@ var ReflowableView = function(options, reader){
             return;
         }
 
-        // We need to make sure the content has indeed be resized, especially
-        // the first time it is triggered
-        _lastBodySize.width = $(bodyElement).width();
-        _lastBodySize.height = $(bodyElement).height();
-
         bodyElement.resizeSensor = new ResizeSensor(bodyElement, function() {
-            
-            var newBodySize = {
-                width: $(bodyElement).width(),
-                height: $(bodyElement).height()
-            };
+            var documentSizeChanged = updateDocumentSize();
 
-            console.debug("ReflowableView content resized ...", newBodySize.width, newBodySize.height, _currentSpineItem.idref);
+            console.debug("ReflowableView content resized ...", _lastDocumentSize.width, _lastDocumentSize.height, _currentSpineItem.idref);
             
-            if (newBodySize.width != _lastBodySize.width || newBodySize.height != _lastBodySize.height) {
-                _lastBodySize.width = newBodySize.width;
-                _lastBodySize.height = newBodySize.height;
-                
+            if (documentSizeChanged) {
                 console.debug("... updating pagination.");
 
                 updatePagination();
