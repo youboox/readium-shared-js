@@ -35429,6 +35429,7 @@ _readium_shared_js_views_reflowable_view = function (Globals, $, _, EventEmitter
     var _userStyles = options.userStyles;
     var _bookStyles = options.bookStyles;
     var _iframeLoader = options.iframeLoader;
+    var _expandDocumentFullWidth = options.expandDocumentFullWidth;
     var _currentSpineItem;
     var _isWaitingFrameRender = false;
     var _deferredPageRequest;
@@ -35464,7 +35465,7 @@ _readium_shared_js_views_reflowable_view = function (Globals, $, _, EventEmitter
       width: undefined,
       height: undefined
     };
-    var _lastBodySize = {
+    var _lastDocumentSize = {
       width: undefined,
       height: undefined
     };
@@ -35837,6 +35838,19 @@ _readium_shared_js_views_reflowable_view = function (Globals, $, _, EventEmitter
       }
       return false;
     }
+    function updateDocumentSize() {
+      var documentElement = _$epubHtml[0];
+      var newDocumentSize = {
+        width: documentElement.scrollWidth,
+        height: documentElement.scrollHeight
+      };
+      if (newDocumentSize.width != _lastDocumentSize.width || newDocumentSize.height != _lastDocumentSize.height) {
+        _lastDocumentSize.width = newDocumentSize.width;
+        _lastDocumentSize.height = newDocumentSize.height;
+        return true;
+      }
+      return false;
+    }
     function onPaginationChanged_(initiator, paginationRequest_spineItem, paginationRequest_elementId) {
       _paginationInfo.currentPageIndex = _paginationInfo.currentSpreadIndex * _paginationInfo.visibleColumnCount;
       _paginationInfo.pageOffset = (_paginationInfo.columnWidth + _paginationInfo.columnGap) * _paginationInfo.visibleColumnCount * _paginationInfo.currentSpreadIndex;
@@ -36055,6 +36069,10 @@ _readium_shared_js_views_reflowable_view = function (Globals, $, _, EventEmitter
            //     onPaginationChanged(self, _currentSpineItem); // => redraw() => showBook()
            // }, 50);
       }
+      updateDocumentSize();
+      if (_expandDocumentFullWidth) {
+        _$iframe.width(_lastDocumentSize.width);
+      }
       // Only initializes the resize sensor once the content has been paginated once,
       // to avoid the pagination process to trigger a resize event during its first
       // execution, provoking a flicker
@@ -36066,19 +36084,10 @@ _readium_shared_js_views_reflowable_view = function (Globals, $, _, EventEmitter
       if (bodyElement.resizeSensor) {
         return;
       }
-      // We need to make sure the content has indeed be resized, especially
-      // the first time it is triggered
-      _lastBodySize.width = $(bodyElement).width();
-      _lastBodySize.height = $(bodyElement).height();
       bodyElement.resizeSensor = new ResizeSensor(bodyElement, function () {
-        var newBodySize = {
-          width: $(bodyElement).width(),
-          height: $(bodyElement).height()
-        };
-        console.debug('ReflowableView content resized ...', newBodySize.width, newBodySize.height, _currentSpineItem.idref);
-        if (newBodySize.width != _lastBodySize.width || newBodySize.height != _lastBodySize.height) {
-          _lastBodySize.width = newBodySize.width;
-          _lastBodySize.height = newBodySize.height;
+        var documentSizeChanged = updateDocumentSize();
+        console.debug('ReflowableView content resized ...', _lastDocumentSize.width, _lastDocumentSize.height, _currentSpineItem.idref);
+        if (documentSizeChanged) {
           console.debug('... updating pagination.');
           updatePagination();
         } else {
