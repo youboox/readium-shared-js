@@ -51,7 +51,7 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
     var _navigationLogic = undefined;
     var _bookStyles = options.bookStyles;
 
-    var _$viewport = options.$viewport;
+    var _$viewport = $(options.$viewport);
 
     var _isIframeLoaded = false;
 
