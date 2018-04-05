@@ -689,7 +689,7 @@ var ReflowableView = function(options, reader){
     };
 
 
-    function updatePagination_() {
+    function updatePagination() {
 
         // At 100% font-size = 16px (on HTML, not body or descendant markup!)
         var MAXW = _paginationInfo.columnMaxWidth;
@@ -912,7 +912,6 @@ var ReflowableView = function(options, reader){
         // execution, provoking a flicker
         initResizeSensor();
     }
-    var updatePagination = _.debounce(updatePagination_, 100);
 
     function initResizeSensor() {
         var bodyElement = _$htmlBody[0];
