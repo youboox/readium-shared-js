@@ -1040,6 +1040,10 @@ var ReflowableView = function(options, reader){
         return self.getFirstVisibleCfi();
     };
 
+    this.getNavigator = function() {
+        return _navigationLogic;
+    };
+
     this.getLoadedSpineItems = function() {
         return [_currentSpineItem];
     };
