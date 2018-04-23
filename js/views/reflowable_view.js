@@ -1230,6 +1230,13 @@ var ReflowableView = function(options, reader){
     this.getNearestCfiFromElement = function(element) {
         return createBookmarkFromCfi(_navigationLogic.getNearestCfiFromElement(element));
     };
+
+    this.getPageIndexOffsetFromCfi = function(cfi) {
+        return _navigationLogic.getPageIndexDeltaForCfi(cfi,
+            _cfiClassBlacklist,
+            _cfiElementBlacklist,
+            _cfiIdBlacklist);
+    }
 };
     return ReflowableView;
 });

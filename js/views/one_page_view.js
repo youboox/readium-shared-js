@@ -1143,6 +1143,10 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
     this.getNearestCfiFromElement = function(element) {
         return createBookmarkFromCfi(self.getNavigator().getNearestCfiFromElement(element));
     };
+
+    this.getPageIndexOffsetFromCfi = function(cfi) {
+        return self.getNavigator().getPageIndexDeltaForCfi(cfi);
+    };
 };
 
 OnePageView.Events = {
