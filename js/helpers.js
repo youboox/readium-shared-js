@@ -1,7 +1,4 @@
-//  LauncherOSX
-//
-//  Created by Boris Schneiderman.
-//  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
+//  Copyright (c) 2018 Readium Foundation and/or its licensees. All rights reserved.
 //
 //  Redistribution and use in source and binary forms, with or without modification,
 //  are permitted provided that the following conditions are met:
@@ -24,49 +21,47 @@
 //  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
-define(["./globals", 'underscore', "jquery", "jquerySizes", "./models/spine_item", 'URIjs'], function(Globals, _, $, JQuerySizes, SpineItem, URI) {
-    
-(function()
-{
-/* jshint strict: true */
-/* jshint -W034 */
-    "use strict";
-    
-    if(window.performance)
-    {
-        if (window.performance.now)
-        {
+
+import Globals from "./globals";
+import _ from 'underscore';
+import jQuery from "jquery";
+import jQuerySizes from "@evidentpoint/jquery-sizes";
+import SpineItem from "./models/spine_item";
+import URI from 'urijs';
+
+const $ = jQuerySizes(jQuery);
+
+(function() {
+    /* jshint strict: true */
+    /* jshint -W034 */
+
+
+    if (window.performance) {
+        if (window.performance.now) {
             return;
         }
-        
+
         var vendors = ['webkitNow', 'mozNow', 'msNow', 'oNow'];
-        
-        for (var i = 0; i < vendors.length; i++)
-        {
-            if (vendors[i] in window.performance)
-            {
+
+        for (var i = 0; i < vendors.length; i++) {
+            if (vendors[i] in window.performance) {
                 window.performance.now = window.performance[vendors[i]];
                 return;
             }
         }
-    }
-    else
-    {
+    } else {
         window.performance = {};
-        
+
     }
-    
-    if(Date.now)
-    {
-        window.performance.now = function()
-        {
+
+    if (Date.now) {
+        window.performance.now = function() {
             return Date.now();
         };
         return;
     }
-    
-    window.performance.now = function()
-    {
+
+    window.performance.now = function() {
         return +(new Date());
     };
 })();
@@ -101,8 +96,7 @@ Helpers.getURLQueryParams = function(initialQuery) {
     if (query && query.length) {
         query = query.substring(1);
         var keyParams = query.split('&');
-        for (var x = 0; x < keyParams.length; x++)
-        {
+        for (var x = 0; x < keyParams.length; x++) {
             var keyVal = keyParams[x].split('=');
             if (keyVal.length > 1) {
                 params[keyVal[0]] = decodeURIComponent(keyVal[1]);
@@ -184,31 +178,31 @@ Helpers.buildUrlQueryParameters = function(initialUrl, queryStringOverrides) {
  * @param height
  * @constructor
  */
-Helpers.Rect = function (left, top, width, height) {
+Helpers.Rect = function(left, top, width, height) {
 
     this.left = left;
     this.top = top;
     this.width = width;
     this.height = height;
 
-    this.right = function () {
+    this.right = function() {
         return this.left + this.width;
     };
 
-    this.bottom = function () {
+    this.bottom = function() {
         return this.top + this.height;
     };
 
-    this.isOverlap = function (rect, tolerance) {
+    this.isOverlap = function(rect, tolerance) {
 
         if (tolerance == undefined) {
             tolerance = 0;
         }
 
         return !(rect.right() < this.left + tolerance ||
-        rect.left > this.right() - tolerance ||
-        rect.bottom() < this.top + tolerance ||
-        rect.top > this.bottom() - tolerance);
+            rect.left > this.right() - tolerance ||
+            rect.bottom() < this.top + tolerance ||
+            rect.top > this.bottom() - tolerance);
     }
 };
 
@@ -220,7 +214,7 @@ Helpers.Rect = function (left, top, width, height) {
 //This method treats multicolumn view as one long column and finds the rectangle of the element in this "long" column
 //we are not using jQuery Offset() and width()/height() function because for multicolumn rendition_layout it produces rectangle as a bounding box of element that
 // reflows between columns this is inconstant and difficult to analyze .
-Helpers.Rect.fromElement = function ($element) {
+Helpers.Rect.fromElement = function($element) {
 
     var e;
     if (_.isArray($element) || $element instanceof jQuery)
@@ -253,7 +247,7 @@ Helpers.Rect.fromElement = function ($element) {
  * @param callback: function invoked when "done", which means that if there are asynchronous operations such as font-face loading via injected stylesheets, then the UpdateHtmlFontAttributes() function returns immediately but the caller should wait for the callback function call if fully-loaded font-face *stylesheets* are required on the caller's side (note that the caller's side may still need to detect *actual font loading*, via the FontLoader API or some sort of ResizeSensor to indicate that the updated font-family has been used to render the document). 
  */
 
-Helpers.UpdateHtmlFontAttributes = function ($epubHtml, fontSize, fontObj, callback) {
+Helpers.UpdateHtmlFontAttributes = function($epubHtml, fontSize, fontObj, callback) {
 
 
     var FONT_FAMILY_ID = "readium_font_family_link";
@@ -261,11 +255,13 @@ Helpers.UpdateHtmlFontAttributes = function ($epubHtml, fontSize, fontObj, callb
     var docHead = $("head", $epubHtml);
     var link = $("#" + FONT_FAMILY_ID, docHead);
 
-    const NOTHING = 0, ADD = 1, REMOVE = 2; //Types for css font family.
+    const NOTHING = 0,
+        ADD = 1,
+        REMOVE = 2; //Types for css font family.
     var changeFontFamily = NOTHING;
 
     var fontLoadCallback = function() {
-            
+
         var perf = false;
 
         // TODO: very slow on Firefox!
@@ -284,14 +280,14 @@ Helpers.UpdateHtmlFontAttributes = function ($epubHtml, fontSize, fontObj, callb
             if (changeFontFamily == ADD) {
                 var style = $epubHtml[0].ownerDocument.createElement('style');
                 style.setAttribute("id", "readium-fontFamily");
-                style.appendChild($epubHtml[0].ownerDocument.createTextNode('html * { font-family: "'+fontObj.fontFamily+'" !important; }')); // this technique works for text-align too (e.g. text-align: justify !important;)
+                style.appendChild($epubHtml[0].ownerDocument.createTextNode('html * { font-family: "' + fontObj.fontFamily + '" !important; }')); // this technique works for text-align too (e.g. text-align: justify !important;)
 
                 docHead[0].appendChild(style);
 
                 //fontFamilyStyle = $(style);
             }
         }
-        
+
         // The code below does not work because jQuery $element.css() on html.body somehow "resets" the font: CSS directive by removing it entirely (font-family: works with !important, but unfortunately further deep inside the DOM there may be CSS applied with the font: directive, which somehow seems to take precedence! ... as shown in Chrome's developer tools)
         // ...thus why we use the above routine instead, to insert a new head>style element
         // // var doc = $epubHtml[0].ownerDocument;
@@ -303,7 +299,7 @@ Helpers.UpdateHtmlFontAttributes = function ($epubHtml, fontSize, fontObj, callb
         // // });
         // $body.css("font-family", "");
         // if (changeFontFamily == ADD) {
-            
+
         //     var existing = $body.attr("style");
         //     $body[0].setAttribute("style",
         //         existing + " ; font-family: '" + fontObj.fontFamily + "' !important ;" + " ; font: regular 100% '" + fontObj.fontFamily + "' !important ;");
@@ -328,7 +324,7 @@ Helpers.UpdateHtmlFontAttributes = function ($epubHtml, fontSize, fontObj, callb
         for (var i = 0; i < $textblocks.length; i++) {
 
             var ele = $textblocks[i];
-            
+
             var fontSizeAttr = ele.getAttribute('data-original-font-size');
             if (fontSizeAttr) {
                 // early exit, original values already set.
@@ -336,7 +332,7 @@ Helpers.UpdateHtmlFontAttributes = function ($epubHtml, fontSize, fontObj, callb
             }
 
             var style = win.getComputedStyle(ele);
-            
+
             var originalFontSize = parseInt(style.fontSize);
             ele.setAttribute('data-original-font-size', originalFontSize);
 
@@ -345,7 +341,7 @@ Helpers.UpdateHtmlFontAttributes = function ($epubHtml, fontSize, fontObj, callb
             if (originalLineHeight) {
                 ele.setAttribute('data-original-line-height', originalLineHeight);
             }
-            
+
             // var fontFamilyAttr = ele.getAttribute('data-original-font-family');
             // if (!fontFamilyAttr) {
             //     var originalFontFamily = style.fontFamily;
@@ -371,7 +367,7 @@ Helpers.UpdateHtmlFontAttributes = function ($epubHtml, fontSize, fontObj, callb
             if (originalLineHeight) {
                 $(ele).css("line-height", (originalLineHeight * factor) + 'px');
             }
-            
+
             // var fontFamilyAttr = ele.getAttribute('data-original-font-family');
             // switch(changeFontFamily){
             //     case NOTHING:
@@ -387,20 +383,20 @@ Helpers.UpdateHtmlFontAttributes = function ($epubHtml, fontSize, fontObj, callb
 
         $epubHtml.css("font-size", fontSize + "%");
 
-        
-        
+
+
         if (perf) {
             var time2 = window.performance.now();
-        
+
             // Firefox: 80+
             // Chrome: 4-10
             // Edge: 15-34
             // IE: 10-15
             // https://readium.firebase.com/?epub=..%2Fepub_content%2Faccessible_epub_3&goto=%7B%22idref%22%3A%22id-id2635343%22%2C%22elementCfi%22%3A%22%2F4%2F2%5Bbuilding_a_better_epub%5D%2F10%2F44%2F6%2C%2F1%3A334%2C%2F1%3A335%22%7D
-            
-            var diff = time2-time1;
+
+            var diff = time2 - time1;
             console.log(diff);
-            
+
             // setTimeout(function(){
             //     alert(diff);
             // }, 2000);
@@ -410,50 +406,47 @@ Helpers.UpdateHtmlFontAttributes = function ($epubHtml, fontSize, fontObj, callb
     };
     var fontLoadCallback_ = _.once(fontLoadCallback);
 
-    if(fontObj.fontFamily && fontObj.url){
+    if (fontObj.fontFamily && fontObj.url) {
         var dataFontFamily = link.length ? link.attr("data-fontfamily") : undefined;
 
-        if(!link.length){
+        if (!link.length) {
             changeFontFamily = ADD;
 
-            setTimeout(function(){
-                
+            setTimeout(function() {
+
                 link = $("<link/>", {
-                    "id" : FONT_FAMILY_ID,
-                    "data-fontfamily" : fontObj.fontFamily,
-                    "rel" : "stylesheet",
-                    "type" : "text/css"
+                    "id": FONT_FAMILY_ID,
+                    "data-fontfamily": fontObj.fontFamily,
+                    "rel": "stylesheet",
+                    "type": "text/css"
                 });
                 docHead.append(link);
-                    
+
                 link.attr({
-                    "href" : fontObj.url
+                    "href": fontObj.url
                 });
             }, 0);
-        }
-        else if(dataFontFamily != fontObj.fontFamily){
+        } else if (dataFontFamily != fontObj.fontFamily) {
             changeFontFamily = ADD;
-        
+
             link.attr({
-                "data-fontfamily" : fontObj.fontFamily,
-                "href" : fontObj.url
+                "data-fontfamily": fontObj.fontFamily,
+                "href": fontObj.url
             });
         } else {
             changeFontFamily = NOTHING;
         }
-    }
-    else{
+    } else {
         changeFontFamily = REMOVE;
-        if(link.length) link.remove();
+        if (link.length) link.remove();
     }
 
     if (changeFontFamily == ADD) {
         // just in case the link@onload does not trigger, we set a timeout
-        setTimeout(function(){
+        setTimeout(function() {
             fontLoadCallback_();
         }, 100);
-    }
-    else { // REMOVE, NOTHING
+    } else { // REMOVE, NOTHING
         fontLoadCallback_();
     }
 };
@@ -466,7 +459,7 @@ Helpers.UpdateHtmlFontAttributes = function ($epubHtml, fontSize, fontObj, callb
  * @returns {string}
  * @constructor
  */
-Helpers.ResolveContentRef = function (contentRef, sourceFileHref) {
+Helpers.ResolveContentRef = function(contentRef, sourceFileHref) {
 
     if (!sourceFileHref) {
         return contentRef;
@@ -496,7 +489,7 @@ Helpers.ResolveContentRef = function (contentRef, sourceFileHref) {
  * @returns {boolean}
  * @static
  */
-Helpers.EndsWith = function (str, suffix) {
+Helpers.EndsWith = function(str, suffix) {
     return str.indexOf(suffix, str.length - suffix.length) !== -1;
 };
 
@@ -507,7 +500,7 @@ Helpers.EndsWith = function (str, suffix) {
  * @returns {boolean}
  * @static
  */
-Helpers.BeginsWith = function (str, suffix) {
+Helpers.BeginsWith = function(str, suffix) {
 
     return str.indexOf(suffix) === 0;
 };
@@ -519,7 +512,7 @@ Helpers.BeginsWith = function (str, suffix) {
  * @returns {string}
  * @static
  */
-Helpers.RemoveFromString = function (str, toRemove) {
+Helpers.RemoveFromString = function(str, toRemove) {
 
     var startIx = str.indexOf(toRemove);
 
@@ -537,7 +530,7 @@ Helpers.RemoveFromString = function (str, toRemove) {
  * @param padding
  * @constructor
  */
-Helpers.Margins = function (margin, border, padding) {
+Helpers.Margins = function(margin, border, padding) {
 
     this.margin = margin;
     this.border = border;
@@ -548,11 +541,11 @@ Helpers.Margins = function (margin, border, padding) {
     this.top = this.margin.top + this.border.top + this.padding.top;
     this.bottom = this.margin.bottom + this.border.bottom + this.padding.bottom;
 
-    this.width = function () {
+    this.width = function() {
         return this.left + this.right;
     };
 
-    this.height = function () {
+    this.height = function() {
         return this.top + this.bottom;
     }
 };
@@ -561,7 +554,7 @@ Helpers.Margins = function (margin, border, padding) {
  *
  * @param $iframe
  */
-Helpers.triggerLayout = function ($iframe) {
+Helpers.triggerLayout = function($iframe) {
 
     var doc = $iframe[0].contentDocument;
 
@@ -587,8 +580,7 @@ Helpers.triggerLayout = function ($iframe) {
                 ss.insertRule(cssRule, 0);
             }
         }
-    }
-    catch (ex) {
+    } catch (ex) {
         console.error(ex);
     }
 
@@ -605,8 +597,7 @@ Helpers.triggerLayout = function ($iframe) {
                 ss.deleteRule(0);
             }
         }
-    }
-    catch (ex) {
+    } catch (ex) {
         console.error(ex);
     }
 
@@ -627,7 +618,7 @@ Helpers.triggerLayout = function ($iframe) {
 // Returns falsy and truthy
 // true and false mean that the synthetic-spread or single-page is "forced" (to be respected whatever the external conditions)
 // 1 and 0 mean that the synthetic-spread or single-page is "not forced" (is allowed to be overriden by external conditions, such as optimum column width / text line number of characters, etc.)
-Helpers.deduceSyntheticSpread = function ($viewport, spineItem, settings) {
+Helpers.deduceSyntheticSpread = function($viewport, spineItem, settings) {
 
     if (!$viewport || $viewport.length == 0) {
         return 0; // non-forced
@@ -645,8 +636,7 @@ Helpers.deduceSyntheticSpread = function ($viewport, spineItem, settings) {
 
     if (settings.syntheticSpread == "double") {
         return true; // forced
-    }
-    else if (settings.syntheticSpread == "single") {
+    } else if (settings.syntheticSpread == "single") {
         return false; // forced
     }
 
@@ -691,16 +681,26 @@ Helpers.deduceSyntheticSpread = function ($viewport, spineItem, settings) {
  * @param $element
  * @returns {Helpers.Rect}
  */
-Helpers.Margins.fromElement = function ($element) {
-    return new this($element.margin(), $element.border(), $element.padding());
+Helpers.Margins.fromElement = function($element) {
+    return new this($($element).margin(), $($element).border(), $($element).padding());
 };
 
 /**
  * @returns {Helpers.Rect}
  */
-Helpers.Margins.empty = function () {
+Helpers.Margins.empty = function() {
 
-    return new this({left: 0, right: 0, top: 0, bottom: 0}, {left: 0, right: 0, top: 0, bottom: 0}, {
+    return new this({
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0
+    }, {
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0
+    }, {
         left: 0,
         right: 0,
         top: 0,
@@ -715,7 +715,7 @@ Helpers.Margins.empty = function () {
  * @param params
  * @returns {Helpers.loadTemplate.cache}
  */
-Helpers.loadTemplate = function (name, params) {
+Helpers.loadTemplate = function(name, params) {
     return Helpers.loadTemplate.cache[name];
 };
 
@@ -731,12 +731,12 @@ Helpers.loadTemplate.cache = {
     "scrolled_book_frame": '<div id="reflowable-book-frame" class="clearfix book-frame reflowable-book-frame"><div id="scrolled-content-frame"></div></div>',
     "reflowable_book_frame": '<div id="reflowable-book-frame" class="clearfix book-frame reflowable-book-frame"></div>',
     "reflowable_book_page_frame": '<div id="reflowable-content-frame" class="reflowable-content-frame"><iframe enable-annotation="enable-annotation" allowfullscreen="allowfullscreen" scrolling="no" id="epubContentIframe"></iframe></div>'
-    /***
-     * The `enable-annotation` attribute on an iframe helps detect the content frames for annotating tools such as Hypothesis
-     * See here for more details:
-     * https://h.readthedocs.io/projects/client/en/latest/publishers/embedding/
-     * https://github.com/hypothesis/client/pull/533
-     ***/
+        /***
+         * The `enable-annotation` attribute on an iframe helps detect the content frames for annotating tools such as Hypothesis
+         * See here for more details:
+         * https://h.readthedocs.io/projects/client/en/latest/publishers/embedding/
+         * https://github.com/hypothesis/client/pull/533
+         ***/
 };
 
 /**
@@ -744,7 +744,7 @@ Helpers.loadTemplate.cache = {
  * @param styles
  * @param $element
  */
-Helpers.setStyles = function (styles, $element) {
+Helpers.setStyles = function(styles, $element) {
 
     var count = styles.length;
 
@@ -764,7 +764,9 @@ Helpers.setStyles = function (styles, $element) {
                 for (var prop in style.declarations) {
                     if (style.declarations.hasOwnProperty(prop)) {
                         // backgroundColor => background-color
-                        var prop_ = prop.replace(/[A-Z]/g, function(a) {return '-' + a.toLowerCase()});
+                        var prop_ = prop.replace(/[A-Z]/g, function(a) {
+                            return '-' + a.toLowerCase()
+                        });
 
                         stylingGlobal += prop_ + ": " + style.declarations[prop] + " !important; ";
                     }
@@ -777,19 +779,23 @@ Helpers.setStyles = function (styles, $element) {
                 for (var prop in style.declarations) {
                     if (style.declarations.hasOwnProperty(prop)) {
                         // backgroundColor => background-color
-                        var prop_ = prop.replace(/[A-Z]/g, function(a) {return '-' + a.toLowerCase()});
+                        var prop_ = prop.replace(/[A-Z]/g, function(a) {
+                            return '-' + a.toLowerCase()
+                        });
                         cssProperties += prop_ + ": " + style.declarations[prop] + " !important; ";
                     }
                 }
 
-                stylings.push({selector: style.selector, cssProps: cssProperties});
+                stylings.push({
+                    selector: style.selector,
+                    cssProps: cssProperties
+                });
             }
-            
+
         } else { // HTML element
             if (style.selector) {
                 $(style.selector, $element).css(style.declarations);
-            }
-            else {
+            } else {
                 $element.css(style.declarations);
             }
         }
@@ -805,7 +811,7 @@ Helpers.setStyles = function (styles, $element) {
             // we remove before re-adding from scratch
             doc.head.removeChild(bookStyleElement[0]);
         }
-        
+
         var cssStylesheet = "";
 
         if (stylingGlobal.length > 0) {
@@ -838,14 +844,13 @@ Helpers.setStyles = function (styles, $element) {
  * @param iframe
  * @returns {boolean}
  */
-Helpers.isIframeAlive = function (iframe) {
+Helpers.isIframeAlive = function(iframe) {
     var w = undefined;
     var d = undefined;
     try {
         w = iframe.contentWindow;
         d = iframe.contentDocument;
-    }
-    catch (ex) {
+    } catch (ex) {
         console.error(ex);
         return false;
     }
@@ -858,7 +863,7 @@ Helpers.isIframeAlive = function (iframe) {
  * @param $viewport
  * @returns {Globals.Views.ORIENTATION_LANDSCAPE|Globals.Views.ORIENTATION_PORTRAIT}
  */
-Helpers.getOrientation = function ($viewport) {
+Helpers.getOrientation = function($viewport) {
 
     var viewportWidth = $viewport.width();
     var viewportHeight = $viewport.height();
@@ -876,34 +881,28 @@ Helpers.getOrientation = function ($viewport) {
  * @param orientation
  * @returns {boolean}
  */
-Helpers.isRenditionSpreadPermittedForItem = function (item, orientation) {
+Helpers.isRenditionSpreadPermittedForItem = function(item, orientation) {
 
     var rendition_spread = item.getRenditionSpread();
 
-    return !rendition_spread
-        || rendition_spread == SpineItem.RENDITION_SPREAD_BOTH
-        || rendition_spread == SpineItem.RENDITION_SPREAD_AUTO
-        || (rendition_spread == SpineItem.RENDITION_SPREAD_LANDSCAPE
-        && orientation == Globals.Views.ORIENTATION_LANDSCAPE)
-        || (rendition_spread == SpineItem.RENDITION_SPREAD_PORTRAIT
-        && orientation == Globals.Views.ORIENTATION_PORTRAIT );
+    return !rendition_spread || rendition_spread == SpineItem.RENDITION_SPREAD_BOTH || rendition_spread == SpineItem.RENDITION_SPREAD_AUTO || (rendition_spread == SpineItem.RENDITION_SPREAD_LANDSCAPE && orientation == Globals.Views.ORIENTATION_LANDSCAPE) || (rendition_spread == SpineItem.RENDITION_SPREAD_PORTRAIT && orientation == Globals.Views.ORIENTATION_PORTRAIT);
 };
 
-Helpers.CSSTransition = function ($el, trans) {
+Helpers.CSSTransition = function($el, trans) {
 
     // does not work!
     //$el.css('transition', trans);
 
     var css = {};
     // empty '' prefix FIRST!
-    _.each(['', '-webkit-', '-moz-', '-ms-'], function (prefix) {
+    _.each(['', '-webkit-', '-moz-', '-ms-'], function(prefix) {
         css[prefix + 'transition'] = prefix + trans;
     });
     $el.css(css);
 }
 
 //scale, left, top, angle, origin
-Helpers.CSSTransformString = function (options) {
+Helpers.CSSTransformString = function(options) {
     var enable3D = options.enable3D ? true : false;
 
     var translate, scale, rotation,
@@ -938,7 +937,7 @@ Helpers.CSSTransformString = function (options) {
     return css;
 };
 
-Helpers.extendedThrottle = function (startCb, tickCb, endCb, tickRate, waitThreshold, context) {
+Helpers.extendedThrottle = function(startCb, tickCb, endCb, tickRate, waitThreshold, context) {
     if (!tickRate) tickRate = 250;
     if (!waitThreshold) waitThreshold = tickRate;
 
@@ -946,7 +945,7 @@ Helpers.extendedThrottle = function (startCb, tickCb, endCb, tickRate, waitThres
         last,
         deferTimer;
 
-    return function () {
+    return function() {
         var ctx = context || this,
             now = (Date.now && Date.now()) || new Date().getTime(),
             args = arguments;
@@ -962,7 +961,7 @@ Helpers.extendedThrottle = function (startCb, tickCb, endCb, tickRate, waitThres
         }
 
         clearTimeout(deferTimer);
-        deferTimer = setTimeout(function () {
+        deferTimer = setTimeout(function() {
             last = now;
             first = true;
             endCb.apply(ctx, args);
@@ -979,7 +978,7 @@ Helpers.extendedThrottle = function (startCb, tickCb, endCb, tickRate, waitThres
  * @param sel
  * @returns {string}
  */
-Helpers.escapeJQuerySelector = function (sel) {
+Helpers.escapeJQuerySelector = function(sel) {
     //http://api.jquery.com/category/selectors/
     //!"#$%&'()*+,./:;<=>?@[\]^`{|}~
     // double backslash escape
@@ -1068,8 +1067,7 @@ Helpers.polyfillCaretRangeFromPoint = function(document) {
                     try {
                         tr.moveToPoint(x, iy + y - IYDepth);
                         return TextRangeUtils.convertToDOMRange(tr, document);
-                    } catch (ex) {
-                    }
+                    } catch (ex) {}
                 }
                 // if that fails, return the location just after the element located there
                 try {
@@ -1085,5 +1083,4 @@ Helpers.polyfillCaretRangeFromPoint = function(document) {
     }
 };
 
-return Helpers;
-});
+export default Helpers;

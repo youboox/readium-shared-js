@@ -1,29 +1,30 @@
-//  Created by Boris Schneiderman.
-//  Copyright (c) 2016 Readium Foundation and/or its licensees. All rights reserved.
-//  
-//  Redistribution and use in source and binary forms, with or without modification, 
+//  Copyright (c) 2018 Readium Foundation and/or its licensees. All rights reserved.
+//
+//  Redistribution and use in source and binary forms, with or without modification,
 //  are permitted provided that the following conditions are met:
-//  1. Redistributions of source code must retain the above copyright notice, this 
+//  1. Redistributions of source code must retain the above copyright notice, this
 //  list of conditions and the following disclaimer.
-//  2. Redistributions in binary form must reproduce the above copyright notice, 
-//  this list of conditions and the following disclaimer in the documentation and/or 
+//  2. Redistributions in binary form must reproduce the above copyright notice,
+//  this list of conditions and the following disclaimer in the documentation and/or
 //  other materials provided with the distribution.
-//  3. Neither the name of the organization nor the names of its contributors may be 
-//  used to endorse or promote products derived from this software without specific 
+//  3. Neither the name of the organization nor the names of its contributors may be
+//  used to endorse or promote products derived from this software without specific
 //  prior written permission.
-//  
-//  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
-//  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-//  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
-//  IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
-//  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
-//  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
-//  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
-//  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
-//  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
+//
+//  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+//  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+//  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+//  IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+//  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+//  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+//  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+//  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+//  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-define(["./spine_item", "../helpers", "URIjs"], function(SpineItem, Helpers, URI) {
+import SpineItem from "./spine_item";
+import Helpers from "../helpers";
+import URI from "urijs";
 /**
  *  Wrapper of the Spine object received from the host application
  *
@@ -84,10 +85,10 @@ var Spine = function(epubPackage, spineDTO) {
      * @method     isValidLinearItem
      * @param      {Number} index  index of a spine item
      * @return     {Boolean} TRUE if the app does not handle linear items or if the item is linear.
-    */
+     */
     this.isValidLinearItem = function(index) {
-        
-        if(!isValidIndex(index)) {
+
+        if (!isValidIndex(index)) {
             return undefined;
         }
 
@@ -122,7 +123,7 @@ var Spine = function(epubPackage, spineDTO) {
      * @method     isValidIndex
      * @param      {Number} index  the index of the expected spine item
      * @return     {Boolean} TRUE is the index is valid.
-    */
+     */
     function isValidIndex(index) {
 
         return index >= 0 && index < self.items.length;
@@ -130,13 +131,13 @@ var Spine = function(epubPackage, spineDTO) {
 
     function lookForPrevValidItem(ix) {
 
-        if(!isValidIndex(ix)) {
+        if (!isValidIndex(ix)) {
             return undefined;
         }
 
         var item = self.items[ix];
 
-        if(isValidLinearItem(item)) {
+        if (isValidLinearItem(item)) {
             return item;
         }
 
@@ -149,7 +150,7 @@ var Spine = function(epubPackage, spineDTO) {
      * @method     prevItem
      * @param      {Models.SpineItem} item  a spine item
      * @return     {Models.SpineItem} the previous spine item or undefined.
-    */
+     */
     this.prevItem = function(item) {
 
         return lookForPrevValidItem(item.index - 1);
@@ -157,13 +158,13 @@ var Spine = function(epubPackage, spineDTO) {
 
     function lookForNextValidItem(ix) {
 
-        if(!isValidIndex(ix)) {
+        if (!isValidIndex(ix)) {
             return undefined;
         }
 
         var item = self.items[ix];
 
-        if(isValidLinearItem(item)) {
+        if (isValidLinearItem(item)) {
             return item;
         }
 
@@ -176,7 +177,7 @@ var Spine = function(epubPackage, spineDTO) {
      * @method     nextItem
      * @param      {Models.SpineItem} item  a spine item
      * @return     {Models.SpineItem} the next spine item or undefined.
-    */
+     */
     this.nextItem = function(item) {
 
         return lookForNextValidItem(item.index + 1);
@@ -188,7 +189,7 @@ var Spine = function(epubPackage, spineDTO) {
      * @method     getItemUrl
      * @param      {Models.SpineItem} item  the spine item
      * @return     {String} the relative URL of the spine item.
-    */
+     */
     this.getItemUrl = function(item) {
 
         return self.package.resolveRelativeUrl(item.href);
@@ -200,7 +201,7 @@ var Spine = function(epubPackage, spineDTO) {
      *
      * @method     first
      * @return     {Models.SpineItem} the first spine item.
-    */
+     */
     this.first = function() {
 
         return lookForNextValidItem(0);
@@ -211,7 +212,7 @@ var Spine = function(epubPackage, spineDTO) {
      *
      * @method     last
      * @return     {Models.SpineItem} the last spine item.
-    */
+     */
     this.last = function() {
 
         return lookForPrevValidItem(this.items.length - 1);
@@ -223,7 +224,7 @@ var Spine = function(epubPackage, spineDTO) {
      * @method     isFirstItem
      * @param      {Models.SpineItem} item  a spine item
      * @return     {Boolean} TRUE if the spine item is the first in the list.
-    */
+     */
     this.isFirstItem = function(item) {
 
         return self.first() === item;
@@ -235,7 +236,7 @@ var Spine = function(epubPackage, spineDTO) {
      * @method     isLastItem
      * @param      {Models.SpineItem} item  a spine item
      * @return     {Boolean} true if the spine item is the last in the list.
-    */
+     */
     this.isLastItem = function(item) {
 
         return self.last() === item;
@@ -247,12 +248,12 @@ var Spine = function(epubPackage, spineDTO) {
      * @method     item
      * @param      {Number} index  the index of the expected spine item
      * @return     {Models.SpineItem} the expected spine item or undefined.
-    */
-   this.item = function(index) {
-        
+     */
+    this.item = function(index) {
+
         if (isValidIndex(index))
             return self.items[index];
-            
+
         return undefined;
     };
 
@@ -267,8 +268,8 @@ var Spine = function(epubPackage, spineDTO) {
 
         var length = self.items.length;
 
-        for(var i = 0; i < length; i++) {
-            if(self.items[i].idref == idref) {
+        for (var i = 0; i < length; i++) {
+            if (self.items[i].idref == idref) {
 
                 return self.items[i];
             }
@@ -285,20 +286,20 @@ var Spine = function(epubPackage, spineDTO) {
      * @return     {Models.SpineItem} the expected spine item or undefined.
      */
     this.getItemByHref = function(href) {
-        
+
         var href1_ = self.package.resolveRelativeUrl(href);
         href1_ = href1_.replace("filesystem:chrome-extension://", "filesystem-chrome-extension://");
         var href1 = new URI(href1_).normalizePathname().pathname();
-        
+
         var length = self.items.length;
 
-        for(var i = 0; i < length; i++) {
-            
+        for (var i = 0; i < length; i++) {
+
             var href2_ = self.package.resolveRelativeUrl(self.items[i].href);
             href2_ = href2_.replace("filesystem:chrome-extension://", "filesystem-chrome-extension://");
             var href2 = new URI(href2_).normalizePathname().pathname();
-            
-            if(href1 == href2) {
+
+            if (href1 == href2) {
                 return self.items[i];
             }
         }
@@ -318,10 +319,10 @@ var Spine = function(epubPackage, spineDTO) {
         var isFirstPageInSpread = false;
         var baseSide = self.isLeftToRight() ? SpineItem.SPREAD_LEFT : SpineItem.SPREAD_RIGHT;
 
-        for(var i = 0; i < len; i++) {
+        for (var i = 0; i < len; i++) {
 
             var spineItem = self.items[i];
-            if( !spineItem.page_spread) {
+            if (!spineItem.page_spread) {
 
                 var spread = spineItem.isRenditionSpreadAllowed() ? (isFirstPageInSpread ? baseSide : SpineItem.alternateSpread(baseSide)) : SpineItem.SPREAD_CENTER;
                 spineItem.setSpread(spread);
@@ -332,14 +333,14 @@ var Spine = function(epubPackage, spineDTO) {
     }
 
     // initialization of the local 'direction' and 'items' array from the spineDTO structure
-    if(spineDTO) {
+    if (spineDTO) {
 
-        if(spineDTO.direction) {
+        if (spineDTO.direction) {
             this.direction = spineDTO.direction;
         }
 
         var length = spineDTO.items.length;
-        for(var i = 0; i < length; i++) {
+        for (var i = 0; i < length; i++) {
             var item = new SpineItem(spineDTO.items[i], i, this);
             this.items.push(item);
         }
@@ -348,5 +349,4 @@ var Spine = function(epubPackage, spineDTO) {
     }
 
 };
-    return Spine;
-});
+export default Spine;

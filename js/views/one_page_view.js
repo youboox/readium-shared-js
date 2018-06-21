@@ -1,5 +1,4 @@
-//  Created by Boris Schneiderman.
-//  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
+//  Copyright (c) 2018 Readium Foundation and/or its licensees. All rights reserved.
 //
 //  Redistribution and use in source and binary forms, with or without modification,
 //  are permitted provided that the following conditions are met:
@@ -23,9 +22,15 @@
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
-define(["../globals", "jquery", "underscore", "eventEmitter", "./cfi_navigation_logic", "../helpers", "../models/viewer_settings", "../models/bookmark_data", "ResizeSensor"],
-    function (Globals, $, _, EventEmitter, CfiNavigationLogic, Helpers, ViewerSettings, BookmarkData, ResizeSensor) {
+import Globals from "../globals";
+import $ from "jquery";
+import _ from "underscore";
+import EventEmitter from 'eventemitter3';
+import CfiNavigationLogic from "./cfi_navigation_logic";
+import Helpers from "../helpers";
+import ViewerSettings from "../models/viewer_settings";
+import BookmarkData from "../models/bookmark_data";
+import { ResizeSensor } from "css-element-queries";
 
 /**
  * Renders one page of fixed layout spread
@@ -35,7 +40,7 @@ define(["../globals", "jquery", "underscore", "eventEmitter", "./cfi_navigation_
  * @param enableBookStyleOverrides
  * @constructor
  */
-var OnePageView = function (options, classes, enableBookStyleOverrides, reader) {
+var OnePageView = function(options, classes, enableBookStyleOverrides, reader) {
 
     $.extend(this, new EventEmitter());
 
@@ -62,17 +67,17 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
         height: undefined
     };
 
-    var PageTransitionHandler = function (opts) {
-        var PageTransition = function (begin, end) {
+    var PageTransitionHandler = function(opts) {
+        var PageTransition = function(begin, end) {
             this.begin = begin;
             this.end = end;
         };
 
         var _pageTransition_OPACITY = new PageTransition(
-            function (scale, left, top, $el, meta_width, meta_height, pageSwitchDir) {
+            function(scale, left, top, $el, meta_width, meta_height, pageSwitchDir) {
                 $el.css("opacity", "0");
             },
-            function (scale, left, top, $el, meta_width, meta_height, pageSwitchDir) {
+            function(scale, left, top, $el, meta_width, meta_height, pageSwitchDir) {
                 $el.css("transform", "none");
 
                 Helpers.CSSTransition($el, "opacity 150ms ease-out");
@@ -82,7 +87,7 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
         );
 
         var _pageTransition_TRANSLATE = new PageTransition(
-            function (scale, left, top, $el, meta_width, meta_height, pageSwitchDir) {
+            function(scale, left, top, $el, meta_width, meta_height, pageSwitchDir) {
                 $el.css("opacity", "0");
 
                 var elWidth = Math.ceil(meta_width * scale);
@@ -95,7 +100,7 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
                 });
                 $el.css(move);
             },
-            function (scale, left, top, $el, meta_width, meta_height, pageSwitchDir) {
+            function(scale, left, top, $el, meta_width, meta_height, pageSwitchDir) {
                 $el.css("opacity", "1");
 
                 Helpers.CSSTransition($el, "transform 150ms ease-out");
@@ -105,7 +110,7 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
         );
 
         var _pageTransition_ROTATE = new PageTransition(
-            function (scale, left, top, $el, meta_width, meta_height, pageSwitchDir) {
+            function(scale, left, top, $el, meta_width, meta_height, pageSwitchDir) {
                 $el.css("opacity", "0");
 
                 var elWidth = Math.ceil(meta_width * scale);
@@ -119,7 +124,7 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
                 }); //(pageSwitchDir === 2 ? '0% 0%' : '100% 0%')
                 $el.css(trans);
             },
-            function (scale, left, top, $el, meta_width, meta_height, pageSwitchDir) {
+            function(scale, left, top, $el, meta_width, meta_height, pageSwitchDir) {
                 $el.css("opacity", "1");
 
                 Helpers.CSSTransition($el, "transform 300ms ease-in-out");
@@ -129,7 +134,7 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
         );
 
         var _pageTransition_SWING = new PageTransition(
-            function (scale, left, top, $el, meta_width, meta_height, pageSwitchDir) {
+            function(scale, left, top, $el, meta_width, meta_height, pageSwitchDir) {
                 $el.css("opacity", "0");
 
                 // SUPER HACKY!! (just for demo)
@@ -164,7 +169,7 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
                 });
                 $el.css(trans);
             },
-            function (scale, left, top, $el, meta_width, meta_height, pageSwitchDir) {
+            function(scale, left, top, $el, meta_width, meta_height, pageSwitchDir) {
                 $el.css("opacity", "1");
 
                 Helpers.CSSTransition($el, "transform 400ms ease-out");
@@ -180,7 +185,7 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
         _pageTransitions.push(_pageTransition_SWING); // 3
 
         var _disablePageTransitions = opts.disablePageTransitions || false;
-                
+
         // TODO: page transitions are broken, sp we disable them to avoid nasty visual artefacts
         _disablePageTransitions = true;
 
@@ -189,7 +194,7 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
         var _enable3D = new ViewerSettings({}).enableGPUHardwareAccelerationCSS3D;
 
         var _viewerSettings = undefined;
-        this.updateOptions = function (o) {
+        this.updateOptions = function(o) {
             _viewerSettings = o;
 
             var settings = _viewerSettings;
@@ -212,7 +217,7 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
         var _pageSwitchActuallyChanged_IFRAME_LOAD = false;
 
         // dir: 0 => new or same page, 1 => previous, 2 => next
-        this.updatePageSwitchDir = function (dir, hasChanged) {
+        this.updatePageSwitchDir = function(dir, hasChanged) {
             if (_pageSwitchActuallyChanged_IFRAME_LOAD) {
                 return;
             }
@@ -221,11 +226,11 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
             _pageSwitchActuallyChanged = hasChanged;
         };
 
-        this.onIFrameLoad = function () {
+        this.onIFrameLoad = function() {
             _pageSwitchActuallyChanged_IFRAME_LOAD = true; // second pass, but initial display for transition
         };
 
-        this.transformContentImmediate_BEGIN = function ($el, scale, left, top) {
+        this.transformContentImmediate_BEGIN = function($el, scale, left, top) {
             var pageSwitchActuallyChanged = _pageSwitchActuallyChanged || _pageSwitchActuallyChanged_IFRAME_LOAD;
             _pageSwitchActuallyChanged_IFRAME_LOAD = false;
 
@@ -239,19 +244,18 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
 
             if (_pageSwitchDir === 0 || !pageTransition) {
                 $el.css("opacity", "0");
-            }
-            else {
+            } else {
                 pageTransition.begin(scale, left, top, $el, self.meta_width(), self.meta_height(), _pageSwitchDir);
             }
         };
 
-        this.transformContentImmediate_END = function ($el, scale, left, top) {
+        this.transformContentImmediate_END = function($el, scale, left, top) {
             if (_disablePageTransitions || _pageTransition === -1) {
                 $el.css("transform", "none");
                 return;
             }
 
-            setTimeout(function () {
+            setTimeout(function() {
                 var pageTransition = (_pageTransition >= 0 && _pageTransition < _pageTransitions.length) ? _pageTransitions[_pageTransition] : undefined;
 
                 if (_pageSwitchDir === 0 || !pageTransition) {
@@ -260,8 +264,7 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
                     Helpers.CSSTransition($el, "opacity 250ms linear");
 
                     $el.css("opacity", "1");
-                }
-                else {
+                } else {
                     pageTransition.end(scale, left, top, $el, self.meta_width(), self.meta_height(), _pageSwitchDir);
                 }
 
@@ -279,24 +282,24 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
         height: 0
     };
 
-    this.element = function () {
+    this.element = function() {
         return _$el;
     };
 
-    this.meta_height = function () {
+    this.meta_height = function() {
         return _meta_size.height;
     };
 
-    this.meta_width = function () {
+    this.meta_width = function() {
         return _meta_size.width;
     };
 
-    this.isDisplaying = function () {
+    this.isDisplaying = function() {
 
         return _isIframeLoaded; //_$iframe && _$iframe[0] && _$epubHtml
     };
 
-    this.render = function () {
+    this.render = function() {
 
         var template = Helpers.loadTemplate("single_page_frame", {});
 
@@ -332,36 +335,36 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
     };
 
 
-    this.decorateIframe = function () {
+    this.decorateIframe = function() {
         if (!_$iframe || !_$iframe.length) return;
 
         _$iframe.css("border-bottom", "1px dashed silver");
         _$iframe.css("border-top", "1px dashed silver");
     };
 
-    this.remove = function () {
+    this.remove = function() {
         this.clear();
-        
+
         _currentSpineItem = undefined;
-        
+
         if (_$el && _$el[0]) {
             _$el.remove();
         }
-        
+
         _$el = undefined;
         _$scaler = undefined;
         _$iframe = undefined;
     };
 
-    this.clear = function () {
+    this.clear = function() {
         _isIframeLoaded = false;
-        
+
         if (_$iframe && _$iframe[0]) {
             _$iframe[0].src = "";
         }
     };
 
-    this.currentSpineItem = function () {
+    this.currentSpineItem = function() {
 
         return _currentSpineItem;
     };
@@ -401,7 +404,7 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
 
         if (_$epubBody // undefined with SVG spine items
             && _enableBookStyleOverrides // not fixed layout (reflowable in scroll view)
-            ) {
+        ) {
 
             var bodyElement = _$epubBody[0];
             if (bodyElement.resizeSensor) {
@@ -421,7 +424,7 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
                 };
 
                 console.debug("OnePageView content resized ...", newBodySize.width, newBodySize.height, _currentSpineItem.idref);
-                
+
                 if (newBodySize.width != _lastBodySize.width || newBodySize.height != _lastBodySize.height) {
                     _lastBodySize.width = newBodySize.width;
                     _lastBodySize.height = newBodySize.height;
@@ -431,9 +434,9 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
                     var src = _spine.package.resolveRelativeUrl(_currentSpineItem.href);
 
                     Globals.logEvent("OnePageView.Events.CONTENT_SIZE_CHANGED", "EMIT", "one_page_view.js [ " + _currentSpineItem.href + " -- " + src + " ]");
-                    
+
                     self.emit(OnePageView.Events.CONTENT_SIZE_CHANGED, _$iframe, _currentSpineItem);
-                    
+
                     //updatePagination();
                 } else {
                     console.debug("... ignored (identical dimensions).");
@@ -441,13 +444,13 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
             });
         }
     }
-    
+
     var _viewSettings = undefined;
-    this.setViewSettings = function (settings, docWillChange) {
+    this.setViewSettings = function(settings, docWillChange) {
 
         _viewSettings = settings;
 
-        if (_enableBookStyleOverrides  // not fixed layout (reflowable in scroll view)
+        if (_enableBookStyleOverrides // not fixed layout (reflowable in scroll view)
             && !docWillChange) {
             self.applyBookStyles();
         }
@@ -459,21 +462,20 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
 
     function updateHtmlFontInfo() {
 
-        if (!_enableBookStyleOverrides) return;  // fixed layout (not reflowable in scroll view)
+        if (!_enableBookStyleOverrides) return; // fixed layout (not reflowable in scroll view)
 
         if (_$epubHtml && _viewSettings) {
             var i = _viewSettings.fontSelection;
-            var useDefault = !reader.fonts || !reader.fonts.length || i <= 0 || (i-1) >= reader.fonts.length;
-            var font = (useDefault ?
-                        {} :
-                        reader.fonts[i - 1]);
+            var useDefault = !reader.fonts || !reader.fonts.length || i <= 0 || (i - 1) >= reader.fonts.length;
+            var font = (useDefault ? {} :
+                reader.fonts[i - 1]);
             Helpers.UpdateHtmlFontAttributes(_$epubHtml, _viewSettings.fontSize, font, function() {});
         }
     }
 
-    this.applyBookStyles = function () {
+    this.applyBookStyles = function() {
 
-        if (!_enableBookStyleOverrides) return;  // fixed layout (not reflowable in scroll view)
+        if (!_enableBookStyleOverrides) return; // fixed layout (not reflowable in scroll view)
 
         if (_$epubHtml) {
             Helpers.setStyles(_bookStyles.getStyles(), _$epubHtml);
@@ -482,9 +484,9 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
     };
 
     //this is called by scroll_view for fixed spine item
-    this.scaleToWidth = function (width) {
+    this.scaleToWidth = function(width) {
 
-        if (_enableBookStyleOverrides) return;  // not fixed layout (reflowable in scroll view)
+        if (_enableBookStyleOverrides) return; // not fixed layout (reflowable in scroll view)
 
         if (_meta_size.width <= 0) return; // resize event too early!
 
@@ -493,7 +495,7 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
     };
 
     //this is called by scroll_view for reflowable spine item
-    this.resizeIFrameToContent = function () {
+    this.resizeIFrameToContent = function() {
         var contHeight = getContentDocHeight();
         //console.log("resizeIFrameToContent: " + contHeight);
 
@@ -502,17 +504,17 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
         self.showIFrame();
     };
 
-    this.setHeight = function (height) {
+    this.setHeight = function(height) {
 
         _$scaler.css("height", height + "px");
         _$el.css("height", height + "px");
 
-//        _$iframe.css("height", height + "px");
+        //        _$iframe.css("height", height + "px");
     };
 
     var _useCSSTransformToHideIframe = true;
 
-    this.showIFrame = function () {
+    this.showIFrame = function() {
 
         _$iframe.css("visibility", "visible");
 
@@ -529,13 +531,15 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
                 enable3D = true;
                 _$iframe.css("transform", "translateZ(0)");
             }
-        }
-        else {
-            _$iframe.css({left: "0px", top: "0px"});
+        } else {
+            _$iframe.css({
+                left: "0px",
+                top: "0px"
+            });
         }
     };
 
-    this.hideIFrame = function () {
+    this.hideIFrame = function() {
 
         _$iframe.css("visibility", "hidden");
 
@@ -554,11 +558,17 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
                 enable3D = true;
             }
 
-            var css = Helpers.CSSTransformString({left: "10000", top: "10000", enable3D: enable3D});
+            var css = Helpers.CSSTransformString({
+                left: "10000",
+                top: "10000",
+                enable3D: enable3D
+            });
             _$iframe.css(css);
-        }
-        else {
-            _$iframe.css({left: "10000px", top: "10000px"});
+        } else {
+            _$iframe.css({
+                left: "10000px",
+                top: "10000px"
+            });
         }
     };
 
@@ -574,8 +584,7 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
 
             var height = Math.round(parseFloat(win.getComputedStyle(doc.documentElement).height)); //body can be shorter!
             return height;
-        }
-        else if (_$epubHtml) {
+        } else if (_$epubHtml) {
             console.error("getContentDocHeight ??");
 
             var jqueryHeight = _$epubHtml.height();
@@ -586,14 +595,14 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
     }
 
     // dir: 0 => new or same page, 1 => previous, 2 => next
-    this.updatePageSwitchDir = function (dir, hasChanged) {
+    this.updatePageSwitchDir = function(dir, hasChanged) {
         _pageTransitionHandler.updatePageSwitchDir(dir, hasChanged);
     };
 
 
-    this.transformContentImmediate = function (scale, left, top) {
+    this.transformContentImmediate = function(scale, left, top) {
 
-        if (_enableBookStyleOverrides) return;  // not fixed layout (reflowable in scroll view)
+        if (_enableBookStyleOverrides) return; // not fixed layout (reflowable in scroll view)
 
         var elWidth = Math.ceil(_meta_size.width * scale);
         var elHeight = Math.floor(_meta_size.height * scale);
@@ -606,7 +615,7 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
         _$el.css("height", elHeight + "px");
 
         if (!_$epubHtml) {
-//                  debugger;
+            //                  debugger;
             return;
         }
 
@@ -619,31 +628,42 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
         if (settings.enableGPUHardwareAccelerationCSS3D) {
             enable3D = true;
         }
-        
+
         if (_$epubBody // not SVG spine item (otherwise fails in Safari OSX)
             && reader.needsFixedLayoutScalerWorkAround()) {
 
-            var css1 = Helpers.CSSTransformString({scale: scale, enable3D: enable3D});
-            
+            var css1 = Helpers.CSSTransformString({
+                scale: scale,
+                enable3D: enable3D
+            });
+
             // See https://github.com/readium/readium-shared-js/issues/285 
             css1["min-width"] = _meta_size.width;
             css1["min-height"] = _meta_size.height;
-            
+
             _$epubHtml.css(css1);
 
             // Ensures content dimensions matches viewport meta (authors / production tools should do this in their CSS...but unfortunately some don't).
             if (_$epubBody && _$epubBody.length) {
-                _$epubBody.css({width:_meta_size.width, height:_meta_size.height});
+                _$epubBody.css({
+                    width: _meta_size.width,
+                    height: _meta_size.height
+                });
             }
 
-            var css2 = Helpers.CSSTransformString({scale : 1, enable3D: enable3D});
+            var css2 = Helpers.CSSTransformString({
+                scale: 1,
+                enable3D: enable3D
+            });
             css2["width"] = _meta_size.width * scale;
             css2["height"] = _meta_size.height * scale;
 
             _$scaler.css(css2);
-        }
-        else {
-            var css = Helpers.CSSTransformString({scale: scale, enable3D: enable3D});
+        } else {
+            var css = Helpers.CSSTransformString({
+                scale: scale,
+                enable3D: enable3D
+            });
             css["width"] = _meta_size.width;
             css["height"] = _meta_size.height;
             _$scaler.css(css);
@@ -655,18 +675,18 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
 
         self.showIFrame();
 
-        setTimeout(function () {
+        setTimeout(function() {
             //_$epubHtml.css("visibility", "visible");
             _$epubHtml.css("opacity", "1");
         }, 0);
-        
+
         // TODO: the CSS transitions do not work anymore, tested on Firefox and Chrome.
         // The line of code below still needs to be invoked, but the logic in _pageTransitionHandler probably need adjusting to work around the animation timing issue.
         // PS: opacity=1 above seems to interfere with the fade-in transition, probably a browser issue with mixing inner-iframe effects with effects applied to the iframe parent/ancestors.
         _pageTransitionHandler.transformContentImmediate_END(_$el, scale, left, top);
     };
 
-    this.getCalculatedPageHeight = function () {
+    this.getCalculatedPageHeight = function() {
         return _$el.height();
     };
 
@@ -713,8 +733,7 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
                 if (wAttr) {
                     try {
                         width = parseInt(wAttr, 10);
-                    }
-                    catch (err) {}
+                    } catch (err) {}
                 }
                 if (width && isWidthPercent) {
                     widthPercent = width;
@@ -726,8 +745,7 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
                 if (hAttr) {
                     try {
                         height = parseInt(hAttr, 10);
-                    }
-                    catch (err) {}
+                    } catch (err) {}
                 }
                 if (height && isHeightPercent) {
                     heightPercent = height;
@@ -739,8 +757,7 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
                         width: width,
                         height: height
                     }
-                }
-                else {
+                } else {
                     /// DISABLED (not a satisfactory fallback)
                     // content = $svg.attr('viewBox');
                     // if(content) {
@@ -778,8 +795,7 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
                 if (!isImage) {
                     console.warn("Viewport: using img dimensions!");
                 }
-            }
-            else {
+            } else {
                 $img = $(contentDocument).find('image');
                 if ($img.length > 0) {
                     var width = undefined;
@@ -789,15 +805,13 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
                     if (wAttr) {
                         try {
                             width = parseInt(wAttr, 10);
-                        }
-                        catch (err) {}
+                        } catch (err) {}
                     }
                     var hAttr = $img[0].getAttribute("height");
                     if (hAttr) {
                         try {
                             height = parseInt(hAttr, 10);
-                        }
-                        catch (err) {}
+                        } catch (err) {}
                     }
 
 
@@ -854,20 +868,20 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
         }
     }
 
-    function onUnload (spineItem) {
+    function onUnload(spineItem) {
         if (spineItem) {
-            
+
             Globals.logEvent("CONTENT_DOCUMENT_UNLOADED", "EMIT", "one_page_view.js [ " + spineItem.href + " ]");
             self.emit(Globals.Events.CONTENT_DOCUMENT_UNLOADED, _$iframe, spineItem);
         }
     }
 
-    this.onUnload = function () {
+    this.onUnload = function() {
         onUnload(_currentSpineItem);
     };
 
     //expected callback signature: function(success, $iframe, spineItem, isNewlyLoaded, context)
-    this.loadSpineItem = function (spineItem, callback, context) {
+    this.loadSpineItem = function(spineItem, callback, context) {
 
         if (_currentSpineItem != spineItem) {
 
@@ -884,11 +898,11 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
 
             Globals.logEvent("OnePageView.Events.SPINE_ITEM_OPEN_START", "EMIT", "one_page_view.js [ " + spineItem.href + " -- " + src + " ]");
             self.emit(OnePageView.Events.SPINE_ITEM_OPEN_START, _$iframe, _currentSpineItem);
-            
-            _iframeLoader.loadIframe(_$iframe[0], src, function (success) {
+
+            _iframeLoader.loadIframe(_$iframe[0], src, function(success) {
 
                 if (success && callback) {
-                    var func = function () {
+                    var func = function() {
                         callback(success, _$iframe, _currentSpineItem, true, context);
                     };
 
@@ -896,8 +910,7 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
                         onIFrameLoad(success); // applies styles
 
                         func();
-                    }
-                    else {
+                    } else {
                         console.error("onIFrameLoad !! doc && win + TIMEOUT");
                         console.debug(spineItem.href);
 
@@ -905,14 +918,14 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
 
                         setTimeout(func, 500);
                     }
-                }
-                else {
+                } else {
                     onIFrameLoad(success);
                 }
 
-            }, self, {spineItem: _currentSpineItem});
-        }
-        else {
+            }, self, {
+                spineItem: _currentSpineItem
+            });
+        } else {
             if (callback) {
                 callback(true, _$iframe, _currentSpineItem, false, context);
             }
@@ -964,7 +977,10 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
         }
 
         if (!isNaN(width) && !isNaN(height)) {
-            return {width: width, height: height};
+            return {
+                width: width,
+                height: height
+            };
         }
 
         return undefined;
@@ -976,7 +992,7 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
             left: 0
         };
     }
-    
+
     function getFrameDimensions() {
         if (reader.needsFixedLayoutScalerWorkAround()) {
             var parentEl = _$el.parent()[0];
@@ -990,8 +1006,8 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
             height: _meta_size.height
         };
     }
-    
-    this.getNavigator = function () {
+
+    this.getNavigator = function() {
         return new CfiNavigationLogic({
             $iframe: _$iframe,
             frameDimensionsGetter: getFrameDimensions,
@@ -1002,7 +1018,7 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
         });
     };
 
-    this.getElementByCfi = function (spineItemIdref, cfi, classBlacklist, elementBlacklist, idBlacklist) {
+    this.getElementByCfi = function(spineItemIdref, cfi, classBlacklist, elementBlacklist, idBlacklist) {
 
         if (spineItemIdref != _currentSpineItem.idref) {
             console.error("spine item is not loaded");
@@ -1013,7 +1029,7 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
         return navigation.getElementByCfi(cfi, classBlacklist, elementBlacklist, idBlacklist);
     };
 
-    this.getElementById = function (spineItemIdref, id) {
+    this.getElementById = function(spineItemIdref, id) {
 
         if (spineItemIdref != _currentSpineItem.idref) {
             console.error("spine item is not loaded");
@@ -1024,9 +1040,9 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
         return navigation.getElementById(id);
     };
 
-    this.getElement = function (spineItemIdref, selector) {
+    this.getElement = function(spineItemIdref, selector) {
 
-        if(spineItemIdref != _currentSpineItem.idref) {
+        if (spineItemIdref != _currentSpineItem.idref) {
             console.error("spine item is not loaded");
             return undefined;
         }
@@ -1040,27 +1056,27 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
         return navigation.getFirstVisibleMediaOverlayElement();
     };
 
-    this.offset = function () {
+    this.offset = function() {
         if (_$iframe) {
             return _$iframe.offset();
         }
         return undefined;
     };
 
-    this.getVisibleElementsWithFilter = function (filterFunction) {
+    this.getVisibleElementsWithFilter = function(filterFunction) {
         var navigation = self.getNavigator();
         var elements = navigation.getVisibleElementsWithFilter(null, filterFunction);
         return elements;
     };
 
-    this.getVisibleElements = function (selector) {
+    this.getVisibleElements = function(selector) {
 
         var navigation = self.getNavigator();
         var elements = navigation.getAllVisibleElementsWithSelector(selector);
         return elements;
     };
 
-    this.getAllElementsWithFilter = function (filterFunction, outsideBody) {
+    this.getAllElementsWithFilter = function(filterFunction, outsideBody) {
         var navigation = self.getNavigator();
         var elements = navigation.getAllElementsWithFilter(filterFunction, outsideBody);
         return elements;
@@ -1068,7 +1084,7 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
 
     this.getElements = function(spineItemIdref, selector) {
 
-        if(spineItemIdref != _currentSpineItem.idref) {
+        if (spineItemIdref != _currentSpineItem.idref) {
             console.error("spine item is not loaded");
             return undefined;
         }
@@ -1078,7 +1094,7 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
         return navigation.getElements(selector);
     };
 
-    this.getNodeRangeInfoFromCfi = function (spineIdRef, partialCfi) {
+    this.getNodeRangeInfoFromCfi = function(spineIdRef, partialCfi) {
         if (spineIdRef != _currentSpineItem.idref) {
             console.warn("spine item is not loaded");
             return undefined;
@@ -1096,27 +1112,30 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
         return new BookmarkData(_currentSpineItem.idref, cfi);
     }
 
-    this.getLoadedContentFrames = function () {
-        return [{spineItem: _currentSpineItem, $iframe: _$iframe}];
+    this.getLoadedContentFrames = function() {
+        return [{
+            spineItem: _currentSpineItem,
+            $iframe: _$iframe
+        }];
     };
 
-    this.getFirstVisibleCfi = function (visibleContentOffsets, frameDimensions) {
+    this.getFirstVisibleCfi = function(visibleContentOffsets, frameDimensions) {
         return createBookmarkFromCfi(self.getNavigator().getFirstVisibleCfi(visibleContentOffsets, frameDimensions));
     };
 
-    this.getLastVisibleCfi = function (visibleContentOffsets, frameDimensions) {
+    this.getLastVisibleCfi = function(visibleContentOffsets, frameDimensions) {
         return createBookmarkFromCfi(self.getNavigator().getLastVisibleCfi(visibleContentOffsets, frameDimensions));
     };
 
-    this.getDomRangeFromRangeCfi = function (rangeCfi, rangeCfi2, inclusive) {
+    this.getDomRangeFromRangeCfi = function(rangeCfi, rangeCfi2, inclusive) {
         return self.getNavigator().getDomRangeFromRangeCfi(rangeCfi, rangeCfi2, inclusive);
     };
 
-    this.getRangeCfiFromDomRange = function (domRange) {
+    this.getRangeCfiFromDomRange = function(domRange) {
         return createBookmarkFromCfi(self.getNavigator().getRangeCfiFromDomRange(domRange));
     };
 
-    this.getVisibleCfiFromPoint = function (x, y, precisePoint) {
+    this.getVisibleCfiFromPoint = function(x, y, precisePoint) {
         return createBookmarkFromCfi(self.getNavigator().getVisibleCfiFromPoint(x, y, precisePoint));
     };
 
@@ -1128,15 +1147,15 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
         return createBookmarkFromCfi(self.getNavigator().getCfiForElement(element));
     };
 
-    this.getElementFromPoint = function (x, y) {
+    this.getElementFromPoint = function(x, y) {
         return self.getNavigator().getElementFromPoint(x, y);
     };
 
-    this.getStartCfi = function () {
+    this.getStartCfi = function() {
         return createBookmarkFromCfi(self.getNavigator().getStartCfi());
     };
 
-    this.getEndCfi = function () {
+    this.getEndCfi = function() {
         return createBookmarkFromCfi(self.getNavigator().getEndCfi());
     };
 
@@ -1153,5 +1172,4 @@ OnePageView.Events = {
     SPINE_ITEM_OPEN_START: "SpineItemOpenStart",
     CONTENT_SIZE_CHANGED: "ContentSizeChanged"
 };
-return OnePageView;
-});
+export default OnePageView;

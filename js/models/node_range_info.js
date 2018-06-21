@@ -1,5 +1,4 @@
-//  Created by Juan Corona
-//  Copyright (c) 2016 Readium Foundation and/or its licensees. All rights reserved.
+//  Copyright (c) 2018 Readium Foundation and/or its licensees. All rights reserved.
 //
 //  Redistribution and use in source and binary forms, with or without modification,
 //  are permitted provided that the following conditions are met:
@@ -23,74 +22,71 @@
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-define(function () {
+/**
+ * @class Models.NodeRangePositionInfo
+ * @constructor
+ * @param {Node} node The actual DOM node
+ * @param {Number} offest The position offsetf for the node
+ */
+var NodeRangePositionInfo = function(node, offset) {
 
     /**
-     * @class Models.NodeRangePositionInfo
-     * @constructor
-     * @param {Node} node The actual DOM node
-     * @param {Number} offest The position offsetf for the node
+     * The actual DOM node
+     * @property node
+     * @type Node
      */
-    var NodeRangePositionInfo = function (node, offset) {
-
-        /**
-         * The actual DOM node
-         * @property node
-         * @type Node
-         */
-        this.node = node;
-
-        /**
-         * The position offsetf for the node
-         * @property offset
-         * @type Number
-         */
-        this.offset = offset;
-
-    };
+    this.node = node;
 
     /**
-     * @class Models.NodeRangeInfo
-     * @constructor
-     * @param {ClientRect} clientRect
-     * @param {Models.NodeRangePositionInfo} startInfo
-     * @param {Models.NodeRangePositionInfo} endInfo
+     * The position offsetf for the node
+     * @property offset
+     * @type Number
      */
-    var NodeRangeInfo = function (clientRect, startInfo, endInfo) {
+    this.offset = offset;
 
-        var self = this;
-        /**
-         * Client rectangle information for the range content bounds
-         * @property clientRect
-         * @type ClientRect
-         */
-        this.clientRect = clientRect;
+};
 
-        /**
-         * Node and position information providing where and which node the range starts with
-         * @property startInfo
-         * @type Models.NodeRangePositionInfo
-         */
-        this.startInfo = startInfo;
+/**
+ * @class Models.NodeRangeInfo
+ * @constructor
+ * @param {ClientRect} clientRect
+ * @param {Models.NodeRangePositionInfo} startInfo
+ * @param {Models.NodeRangePositionInfo} endInfo
+ */
+var NodeRangeInfo = function(clientRect, startInfo, endInfo) {
 
-        /**
-         * Node and position information providing where and which node the range ends with
-         * @property endInfo
-         * @type Models.NodeRangePositionInfo
-         */
-        this.endInfo = endInfo;
+    var self = this;
+    /**
+     * Client rectangle information for the range content bounds
+     * @property clientRect
+     * @type ClientRect
+     */
+    this.clientRect = clientRect;
+
+    /**
+     * Node and position information providing where and which node the range starts with
+     * @property startInfo
+     * @type Models.NodeRangePositionInfo
+     */
+    this.startInfo = startInfo;
+
+    /**
+     * Node and position information providing where and which node the range ends with
+     * @property endInfo
+     * @type Models.NodeRangePositionInfo
+     */
+    this.endInfo = endInfo;
 
 
-        this.setStartInfo = function (info) {
-            self.startInfo = new NodeRangePositionInfo(info);
-            return self;
-        };
-
-        this.setEndInfo = function (info) {
-            self.endInfo = new NodeRangePositionInfo(info);
-            return self;
-        };
+    this.setStartInfo = function(info) {
+        self.startInfo = new NodeRangePositionInfo(info);
+        return self;
     };
 
-    return NodeRangeInfo;
-});
+    this.setEndInfo = function(info) {
+        self.endInfo = new NodeRangePositionInfo(info);
+        return self;
+    };
+};
+
+export default NodeRangeInfo;

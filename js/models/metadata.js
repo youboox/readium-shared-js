@@ -1,5 +1,4 @@
-//  Created by Juan Corona
-//  Copyright (c) 2016 Readium Foundation and/or its licensees. All rights reserved.
+//  Copyright (c) 2018 Readium Foundation and/or its licensees. All rights reserved.
 //
 //  Redistribution and use in source and binary forms, with or without modification,
 //  are permitted provided that the following conditions are met:
@@ -22,39 +21,37 @@
 //  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
-define([], function () {
 
-    /**
-     *  Wrapper of the Metadata object, created in openBook()
-     *
-     * @class  Models.Metadata
-     */
-    var Metadata = function(packageMetadata) {
-        this.identifier = undefined;
-        this.title = undefined;
-        this.author = undefined;
-        this.description = undefined;
-        this.publisher = undefined;
-        this.language = undefined;
-        this.rights = undefined;
-        this.modifiedDate = undefined;
-        this.publishedDate = undefined;
-        this.epubVersion = undefined;
+/**
+ *  Wrapper of the Metadata object, created in openBook()
+ *
+ * @class  Models.Metadata
+ */
+var Metadata = function(packageMetadata) {
+    this.identifier = undefined;
+    this.title = undefined;
+    this.author = undefined;
+    this.description = undefined;
+    this.publisher = undefined;
+    this.language = undefined;
+    this.rights = undefined;
+    this.modifiedDate = undefined;
+    this.publishedDate = undefined;
+    this.epubVersion = undefined;
 
-        if (packageMetadata) {
-            this.identifier = packageMetadata.id;
-            this.title = packageMetadata.title;
-            this.author = packageMetadata.author;
-            this.description = packageMetadata.description;
-            this.language = packageMetadata.language;
-            this.publisher = packageMetadata.publisher;
-            this.rights = packageMetadata.rights;
-            this.modifiedDate = packageMetadata.modified_date;
-            this.publishedDate = packageMetadata.pubdate;
-            this.epubVersion = packageMetadata.epub_version;
-        }
-    };
+    if (packageMetadata) {
+        this.identifier = packageMetadata.id;
+        this.title = packageMetadata.title;
+        this.author = packageMetadata.author;
+        this.description = packageMetadata.description;
+        this.language = packageMetadata.language;
+        this.publisher = packageMetadata.publisher;
+        this.rights = packageMetadata.rights;
+        this.modifiedDate = packageMetadata.modified_date;
+        this.publishedDate = packageMetadata.pubdate;
+        this.epubVersion = packageMetadata.epub_version;
+    }
+};
 
-    return Metadata;
-});
+export default Metadata;
 

@@ -1,32 +1,28 @@
-//  LauncherOSX
+//  Copyright (c) 2018 Readium Foundation and/or its licensees. All rights reserved.
 //
-//  Created by Boris Schneiderman.
-// Modified by Daniel Weck
-//  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
-//  
-//  Redistribution and use in source and binary forms, with or without modification, 
+//  Redistribution and use in source and binary forms, with or without modification,
 //  are permitted provided that the following conditions are met:
-//  1. Redistributions of source code must retain the above copyright notice, this 
+//  1. Redistributions of source code must retain the above copyright notice, this
 //  list of conditions and the following disclaimer.
-//  2. Redistributions in binary form must reproduce the above copyright notice, 
-//  this list of conditions and the following disclaimer in the documentation and/or 
+//  2. Redistributions in binary form must reproduce the above copyright notice,
+//  this list of conditions and the following disclaimer in the documentation and/or
 //  other materials provided with the distribution.
-//  3. Neither the name of the organization nor the names of its contributors may be 
-//  used to endorse or promote products derived from this software without specific 
+//  3. Neither the name of the organization nor the names of its contributors may be
+//  used to endorse or promote products derived from this software without specific
 //  prior written permission.
-//  
-//  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
-//  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-//  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
-//  IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
-//  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
-//  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
-//  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
-//  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
-//  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
+//
+//  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+//  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+//  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+//  IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+//  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+//  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+//  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+//  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+//  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-define(["./smil_model"], function(SmilModel) {
+import SmilModel from "./smil_model";
 
 /**
  * Wrapper of the MediaOverlay object
@@ -34,7 +30,7 @@ define(["./smil_model"], function(SmilModel) {
  * @class Models.MediaOverlay
  * @constructor
  * @param {Models.Package} packageModel  EPUB package
-*/
+ */
 
 var MediaOverlay = function(packageModel) {
 
@@ -43,7 +39,7 @@ var MediaOverlay = function(packageModel) {
      *
      * @property package
      * @type Models.Package
-     */    
+     */
     this.package = packageModel;
 
     /**
@@ -55,19 +51,16 @@ var MediaOverlay = function(packageModel) {
      * @return     {Smil.ParNode}  
      */
 
-    this.parallelAt = function(timeMilliseconds)
-    {
+    this.parallelAt = function(timeMilliseconds) {
         var offset = 0;
-        
-        for (var i = 0; i < this.smil_models.length; i++)
-        {
+
+        for (var i = 0; i < this.smil_models.length; i++) {
             var smilData = this.smil_models[i];
-            
+
             var timeAdjusted = timeMilliseconds - offset;
 
             var para = smilData.parallelAt(timeAdjusted);
-            if (para)
-            {
+            if (para) {
                 return para;
             }
 
@@ -76,7 +69,7 @@ var MediaOverlay = function(packageModel) {
 
         return undefined;
     };
-    
+
     /**
      * Calculates a timecode corresponding to a percent of the total audio duration (the function parameters smilData, par, and milliseconds are objects with a single field using the same name)
      *
@@ -87,36 +80,30 @@ var MediaOverlay = function(packageModel) {
      * @param      {Number} milliseconds (object with a single field using the same name, used as OUT param)
      */
 
-    this.percentToPosition = function(percent, smilData, par, milliseconds)
-    {
-        if (percent < 0.0 || percent > 100.0)
-        {
+    this.percentToPosition = function(percent, smilData, par, milliseconds) {
+        if (percent < 0.0 || percent > 100.0) {
             percent = 0.0;
         }
-            
+
         var total = this.durationMilliseconds_Calculated();
 
         var timeMs = total * (percent / 100.0);
 
         par.par = this.parallelAt(timeMs);
-        if (!par.par)
-        {
+        if (!par.par) {
             return;
         }
-        
+
         var smilDataPar = par.par.getSmil();
-        if (!smilDataPar)
-        {
+        if (!smilDataPar) {
             return;
         }
-        
+
         var smilDataOffset = 0;
-        
-        for (var i = 0; i < this.smil_models.length; i++)
-        {
+
+        for (var i = 0; i < this.smil_models.length; i++) {
             smilData.smilData = this.smil_models[i];
-            if (smilData.smilData == smilDataPar)
-            {
+            if (smilData.smilData == smilDataPar) {
                 break;
             }
             smilDataOffset += smilData.smilData.durationMilliseconds_Calculated();
@@ -132,20 +119,18 @@ var MediaOverlay = function(packageModel) {
      * @return     {Number} total duration 
      */
 
-    this.durationMilliseconds_Calculated = function()
-    {
+    this.durationMilliseconds_Calculated = function() {
         var total = 0;
-        
-        for (var i = 0; i < this.smil_models.length; i++)
-        {
+
+        for (var i = 0; i < this.smil_models.length; i++) {
             var smilData = this.smil_models[i];
 
             total += smilData.durationMilliseconds_Calculated();
         }
-        
+
         return total;
     };
-    
+
     /**
      * Returns the smil overlay at the given index
      *
@@ -154,16 +139,14 @@ var MediaOverlay = function(packageModel) {
      * @return     {Models.SmilModel}
      */
 
-    this.smilAt = function(smilIndex)
-    {
-        if (smilIndex < 0 || smilIndex >= this.smil_models.length)
-        {
+    this.smilAt = function(smilIndex) {
+        if (smilIndex < 0 || smilIndex >= this.smil_models.length) {
             return undefined;
         }
-        
+
         return this.smil_models[smilIndex];
     }
-    
+
     /**
      * Calculates a percent of the total audio duration corresponding to a timecode
      * 
@@ -174,37 +157,33 @@ var MediaOverlay = function(packageModel) {
      * @return     {Number} percent 
      */
 
-    this.positionToPercent = function(smilIndex, parIndex, milliseconds)
-    {
-           
-        if (smilIndex >= this.smil_models.length)
-        {
+    this.positionToPercent = function(smilIndex, parIndex, milliseconds) {
+
+        if (smilIndex >= this.smil_models.length) {
             return -1.0;
         }
 
         var smilDataOffset = 0;
-        for (var i = 0; i < smilIndex; i++)
-        {
+        for (var i = 0; i < smilIndex; i++) {
             var sd = this.smil_models[i];
             smilDataOffset += sd.durationMilliseconds_Calculated();
         }
-        
+
         var smilData = this.smil_models[smilIndex];
 
         var par = smilData.nthParallel(parIndex);
-        if (!par)
-        {
+        if (!par) {
             return -1.0;
         }
 
         var offset = smilDataOffset + smilData.clipOffset(par) + milliseconds;
-        
+
         var total = this.durationMilliseconds_Calculated();
 
         var percent = (offset / total) * 100;
-        
+
         return percent;
-      };
+    };
 
     /**
      * Array of smil models {Models.SmilModel}
@@ -223,7 +202,7 @@ var MediaOverlay = function(packageModel) {
      */
 
     this.skippables = [];
-    
+
     /**
      * List of the escapable smil items
      *
@@ -280,15 +259,13 @@ var MediaOverlay = function(packageModel) {
      * @return     {Models.SmilModel} 
      */
 
-    this.getSmilBySpineItem = function (spineItem) {
+    this.getSmilBySpineItem = function(spineItem) {
         if (!spineItem) return undefined;
 
-        for(var i = 0, count = this.smil_models.length; i < count; i++)
-        {
+        for (var i = 0, count = this.smil_models.length; i < count; i++) {
             var smil = this.smil_models[i];
-            if(smil.spineItemId === spineItem.idref) {
-                if (spineItem.media_overlay_id !== smil.id)
-                {
+            if (smil.spineItemId === spineItem.idref) {
+                if (spineItem.media_overlay_id !== smil.id) {
                     console.error("SMIL INCORRECT ID?? " + spineItem.media_overlay_id + " /// " + smil.id);
                 }
                 return smil;
@@ -324,7 +301,7 @@ var MediaOverlay = function(packageModel) {
     this.getNextSmil = function(smil) {
 
         var index = this.smil_models.indexOf(smil);
-        if(index == -1 || index == this.smil_models.length - 1) {
+        if (index == -1 || index == this.smil_models.length - 1) {
             return undefined;
         }
 
@@ -342,7 +319,7 @@ var MediaOverlay = function(packageModel) {
     this.getPreviousSmil = function(smil) {
 
         var index = this.smil_models.indexOf(smil);
-        if(index == -1 || index == 0) {
+        if (index == -1 || index == 0) {
             return undefined;
         }
 
@@ -357,19 +334,18 @@ var MediaOverlay = function(packageModel) {
  * @param {Object} moDTO Media overlay data object (raw JSON, as returned by a parser)
  * @param {Models.Package} packageModel EPUB package object
  * @return {Models.MediaOverlay}
-*/
+ */
 
 MediaOverlay.fromDTO = function(moDTO, packageModel) {
 
     var mo = new MediaOverlay(packageModel);
 
-    if(!moDTO) {
+    if (!moDTO) {
         return mo;
     }
 
     mo.duration = moDTO.duration;
-    if (mo.duration && mo.duration.length && mo.duration.length > 0)
-    {
+    if (mo.duration && mo.duration.length && mo.duration.length > 0) {
         console.error("SMIL total duration is string, parsing float... (" + mo.duration + ")");
         mo.duration = parseFloat(mo.duration);
     }
@@ -392,7 +368,7 @@ MediaOverlay.fromDTO = function(moDTO, packageModel) {
     if (mo.DEBUG)
         console.debug("Media Overlay SMIL count: " + count);
 
-    for(var i = 0; i < count; i++) {
+    for (var i = 0; i < count; i++) {
         var smilModel = SmilModel.fromSmilDTO(moDTO.smil_models[i], mo);
         mo.smil_models.push(smilModel);
 
@@ -404,7 +380,7 @@ MediaOverlay.fromDTO = function(moDTO, packageModel) {
     if (mo.DEBUG)
         console.debug("Media Overlay SKIPPABLES count: " + count);
 
-    for(var i = 0; i < count; i++) {
+    for (var i = 0; i < count; i++) {
         mo.skippables.push(moDTO.skippables[i]);
     }
 
@@ -412,7 +388,7 @@ MediaOverlay.fromDTO = function(moDTO, packageModel) {
     if (mo.DEBUG)
         console.debug("Media Overlay ESCAPABLES count: " + count);
 
-    for(var i = 0; i < count; i++) {
+    for (var i = 0; i < count; i++) {
         mo.escapables.push(moDTO.escapables[i]);
 
     }
@@ -420,7 +396,6 @@ MediaOverlay.fromDTO = function(moDTO, packageModel) {
     return mo;
 };
 
-return MediaOverlay;
-});
+export default MediaOverlay;
 
 

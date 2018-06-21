@@ -1,7 +1,4 @@
-//  LauncherOSX
-//
-//  Created by Boris Schneiderman.
-//  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
+//  Copyright (c) 2018 Readium Foundation and/or its licensees. All rights reserved.
 //  
 //  Redistribution and use in source and binary forms, with or without modification, 
 //  are permitted provided that the following conditions are met:
@@ -24,7 +21,9 @@
 //  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
-define(["jquery", "underscore"], function($, _) {
+
+import $ from "jquery";
+import _ from "underscore";
 /** 
  * Switches in the epub publication.
  * 
@@ -51,7 +50,7 @@ Switches.apply = function(dom) {
     function isSupported(caseNode) {
 
         var ns = caseNode.attributes["required-namespace"];
-        if(!ns) {
+        if (!ns) {
             // the namespace was not specified, that should
             // never happen, we don't support it then
             console.log("Encountered a case statement with no required-namespace");
@@ -63,9 +62,11 @@ Switches.apply = function(dom) {
         return _.include(supportedNamespaces, ns.value);
     }
 
-    var getQuery = ((window.navigator.userAgent.indexOf("Trident") > 0) || (window.navigator.userAgent.indexOf("Edge") > 0))
-        ? function (elementName) { return 'epub\\:' + elementName; }
-        : function (elementName) { return elementName; };
+    var getQuery = ((window.navigator.userAgent.indexOf("Trident") > 0) || (window.navigator.userAgent.indexOf("Edge") > 0)) ? function(elementName) {
+        return 'epub\\:' + elementName;
+    } : function(elementName) {
+        return elementName;
+    };
 
     _.each(dom.querySelectorAll(getQuery('switch')), function(switchNode) {
 
@@ -74,10 +75,9 @@ Switches.apply = function(dom) {
 
         _.each(switchNode.querySelectorAll(getQuery('case')), function(caseNode) {
 
-            if( !found && isSupported(caseNode) ) {
+            if (!found && isSupported(caseNode)) {
                 found = true; // we found the node, don't remove it
-            }
-            else {
+            } else {
                 $(caseNode).remove(); // remove the node from the dom
             }
 
@@ -94,5 +94,4 @@ Switches.apply = function(dom) {
 
     });
 };
-    return Switches;
-});
+export default Switches;

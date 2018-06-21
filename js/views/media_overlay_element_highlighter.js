@@ -1,8 +1,4 @@
-//  LauncherOSX
-//
-//  Created by Boris Schneiderman.
-// Modified by Daniel Weck
-//  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
+//  Copyright (c) 2018 Readium Foundation and/or its licensees. All rights reserved.
 //  
 //  Redistribution and use in source and binary forms, with or without modification, 
 //  are permitted provided that the following conditions are met:
@@ -26,7 +22,8 @@
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-define(['jquery', 'readium_cfi_js'], function($, EPUBcfi) {
+import $ from 'jquery';
+import * as EPUBcfi from 'readium-cfi-js';
 /**
  *
  * @param reader
@@ -38,18 +35,16 @@ var MediaOverlayElementHighlighter = function(reader) {
 
     var DEFAULT_MO_ACTIVE_CLASS = "mo-active-default";
     var DEFAULT_MO_SUB_SYNC_CLASS = "mo-sub-sync";
-    
+
     //var BACK_COLOR = "#99CCCC";
 
     var _highlightedElementPar = undefined;
-    this.isElementHighlighted = function(par)
-    {
+    this.isElementHighlighted = function(par) {
         return _highlightedElementPar && par === _highlightedElementPar;
     };
-    
+
     var _highlightedCfiPar = undefined;
-    this.isCfiHighlighted = function(par)
-    {
+    this.isCfiHighlighted = function(par) {
         return _highlightedCfiPar && par === _highlightedCfiPar;
     };
 
@@ -57,19 +52,17 @@ var MediaOverlayElementHighlighter = function(reader) {
     var _playbackActiveClass = "";
 
     var _reader = reader;
-    
+
     var HIGHLIGHT_ID = "MO_SPEAK";
-    
+
     var self = this;
 
     var $userStyle = undefined;
-    
-    this.reDo = function()
-    {
+
+    this.reDo = function() {
         //this.reset();
-        
-        if ($userStyle)
-        {
+
+        if ($userStyle) {
             $userStyle.remove();
         }
         $userStyle = undefined;
@@ -78,35 +71,26 @@ var MediaOverlayElementHighlighter = function(reader) {
         var hc = _highlightedCfiPar;
         var c1 = _activeClass;
         var c2 = _playbackActiveClass;
-        
-        if (_highlightedElementPar)
-        {
+
+        if (_highlightedElementPar) {
             this.reset();
 
             this.highlightElement(he, c1, c2);
-        }
-        else if (_highlightedCfiPar)
-        {
+        } else if (_highlightedCfiPar) {
             this.reset();
 
             this.highlightCfi(hc, c1, c2);
         }
     };
 
-    function ensureUserStyle($element, hasAuthorStyle, overrideWithUserStyle)
-    {
-        if ($userStyle)
-        {
-            try
-            {
-                if ($userStyle[0].ownerDocument === $element[0].ownerDocument)
-                {
+    function ensureUserStyle($element, hasAuthorStyle, overrideWithUserStyle) {
+        if ($userStyle) {
+            try {
+                if ($userStyle[0].ownerDocument === $element[0].ownerDocument) {
                     return;
                 }
-            }
-            catch (e)
-            {
-                
+            } catch (e) {
+
             }
         }
 
@@ -116,49 +100,43 @@ var MediaOverlayElementHighlighter = function(reader) {
         $userStyle = $("<style type='text/css'> </style>");
 
         $userStyle.append("." + DEFAULT_MO_ACTIVE_CLASS + " {");
-        
+
         var fallbackUserStyle = "background-color: yellow !important; color: black !important; border-radius: 0.4em;";
-        
+
         var style = overrideWithUserStyle; //_reader.userStyles().findStyle("." + DEFAULT_MO_ACTIVE_CLASS);
-        if (style)
-        {
+        if (style) {
             var atLeastOne = false;
-            for(var prop in style.declarations)
-            {
-                if(!style.declarations.hasOwnProperty(prop))
-                {
+            for (var prop in style.declarations) {
+                if (!style.declarations.hasOwnProperty(prop)) {
                     continue;
                 }
 
                 atLeastOne = true;
                 $userStyle.append(prop + ": " + style.declarations[prop] + "; ");
             }
-            
-            if (!atLeastOne && !hasAuthorStyle)
-            {
+
+            if (!atLeastOne && !hasAuthorStyle) {
                 $userStyle.append(fallbackUserStyle);
             }
-        }
-        else if (!hasAuthorStyle)
-        {
+        } else if (!hasAuthorStyle) {
             $userStyle.append(fallbackUserStyle);
         }
-        
+
         $userStyle.append("}");
-        
-        
+
+
         // ---- CFI
         //$userStyle.append(" .highlight {background-color: blue; border: 2x solid green;}"); //.hover-highlight
-        
-        
+
+
         $userStyle.appendTo($head);
 
-//console.debug($userStyle[0].textContent);
+        //console.debug($userStyle[0].textContent);
     };
-    
+
     this.highlightElement = function(par, activeClass, playbackActiveClass) {
 
-        if(!par || par === _highlightedElementPar) {
+        if (!par || par === _highlightedElementPar) {
             return;
         }
 
@@ -166,15 +144,14 @@ var MediaOverlayElementHighlighter = function(reader) {
 
         _highlightedElementPar = par;
         _highlightedCfiPar = undefined;
-        
+
         _activeClass = activeClass;
         _playbackActiveClass = playbackActiveClass;
 
         var seq = this.adjustParToSeqSyncGranularity(_highlightedElementPar);
         var element = seq.element;
-        
-        if (_playbackActiveClass && _playbackActiveClass !== "")
-        {
+
+        if (_playbackActiveClass && _playbackActiveClass !== "") {
             //console.debug("MO playbackActiveClass: " + _playbackActiveClass);
             $(element.ownerDocument.documentElement).addClass(_playbackActiveClass);
             //console.debug("MO playbackActiveClass 2: " + element.ownerDocument.documentElement.classList);
@@ -186,77 +163,72 @@ var MediaOverlayElementHighlighter = function(reader) {
         var overrideWithUserStyle = _reader.userStyles().findStyle("." + DEFAULT_MO_ACTIVE_CLASS);
 
         ensureUserStyle($hel, hasAuthorStyle, overrideWithUserStyle);
-                
-        if (overrideWithUserStyle || !hasAuthorStyle)
-        {
+
+        if (overrideWithUserStyle || !hasAuthorStyle) {
             //console.debug("MO active NO CLASS: " + _activeClass);
 
-            if (hasAuthorStyle)
-            {
+            if (hasAuthorStyle) {
                 $hel.addClass(_activeClass);
             }
-            
+
             $hel.addClass(DEFAULT_MO_ACTIVE_CLASS);
 
             //$(element).css("background", BACK_COLOR);
-        }
-        else
-        {
+        } else {
             //console.debug("MO activeClass: " + _activeClass);
             $hel.addClass(_activeClass);
         }
-        
-        if (this.includeParWhenAdjustingToSeqSyncGranularity || _highlightedElementPar !== seq)
-        {
+
+        if (this.includeParWhenAdjustingToSeqSyncGranularity || _highlightedElementPar !== seq) {
             $(_highlightedElementPar.element).addClass(DEFAULT_MO_SUB_SYNC_CLASS);
         }
-        
-// ---- CFI
-//         try
-//         {
-//             // //noinspection JSUnresolvedVariable
-//             // var cfi = EPUBcfi.Generator.generateElementCFIComponent(element); //$hel[0]
-//             // if(cfi[0] == "!") {
-//             //     cfi = cfi.substring(1);
-//             // }
-// 
-// //console.log(element);
-//         
-//             var firstTextNode = getFirstTextNode(element);
-//             var txtFirst = firstTextNode.textContent;
-// //console.log(txtFirst);
-// 
-//             var lastTextNode = getLastTextNode(element);
-//             var txtLast = lastTextNode.textContent;
-// //console.log(txtLast);
-//         
-//             var cfi = EPUBcfi.Generator.generateCharOffsetRangeComponent(
-//                     firstTextNode, 
-//                     0, 
-//                     lastTextNode, 
-//                     txtLast.length,
-//                     ["cfi-marker"],
-//                     [],
-//                     ["MathJax_Message"]
-//                     );
-//             
-//             var id = $hel.data("mediaOverlayData").par.getSmil().spineItemId;
-//             _reader.addHighlight(id, cfi, HIGHLIGHT_ID,
-//             "highlight", //"underline"
-//             undefined // styles
-//                         );
-//         }
-//         catch(error)
-//         {
-//             console.error(error);
-//         
-//             removeHighlight();
-//         }
+
+        // ---- CFI
+        //         try
+        //         {
+        //             // //noinspection JSUnresolvedVariable
+        //             // var cfi = EPUBcfi.Generator.generateElementCFIComponent(element); //$hel[0]
+        //             // if(cfi[0] == "!") {
+        //             //     cfi = cfi.substring(1);
+        //             // }
+        // 
+        // //console.log(element);
+        //         
+        //             var firstTextNode = getFirstTextNode(element);
+        //             var txtFirst = firstTextNode.textContent;
+        // //console.log(txtFirst);
+        // 
+        //             var lastTextNode = getLastTextNode(element);
+        //             var txtLast = lastTextNode.textContent;
+        // //console.log(txtLast);
+        //         
+        //             var cfi = EPUBcfi.Generator.generateCharOffsetRangeComponent(
+        //                     firstTextNode, 
+        //                     0, 
+        //                     lastTextNode, 
+        //                     txtLast.length,
+        //                     ["cfi-marker"],
+        //                     [],
+        //                     ["MathJax_Message"]
+        //                     );
+        //             
+        //             var id = $hel.data("mediaOverlayData").par.getSmil().spineItemId;
+        //             _reader.addHighlight(id, cfi, HIGHLIGHT_ID,
+        //             "highlight", //"underline"
+        //             undefined // styles
+        //                         );
+        //         }
+        //         catch(error)
+        //         {
+        //             console.error(error);
+        //         
+        //             removeHighlight();
+        //         }
     };
-    
+
     this.highlightCfi = function(par, activeClass, playbackActiveClass) {
 
-        if(!par || par === _highlightedCfiPar) {
+        if (!par || par === _highlightedCfiPar) {
             return;
         }
 
@@ -264,7 +236,7 @@ var MediaOverlayElementHighlighter = function(reader) {
 
         _highlightedElementPar = undefined;
         _highlightedCfiPar = par;
-        
+
         _activeClass = activeClass;
         _playbackActiveClass = playbackActiveClass;
 
@@ -279,171 +251,149 @@ var MediaOverlayElementHighlighter = function(reader) {
 
         if (_reader.plugins.highlights) // same API, newer implementation
         {
-            try
-            {
+            try {
                 //var id = $hel.data("mediaOverlayData").par.getSmil().spineItemId;
                 var id = par.getSmil().spineItemId;
                 _reader.plugins.highlights.addHighlight(id, par.cfi.partialRangeCfi, HIGHLIGHT_ID,
-                "highlight", //"underline"
-                undefined // styles
-                            );
-            }
-            catch(error)
-            {
+                    "highlight", //"underline"
+                    undefined // styles
+                );
+            } catch (error) {
                 console.error(error);
             }
-        }
-        else if (_reader.plugins.annotations) // legacy
+        } else if (_reader.plugins.annotations) // legacy
         {
-            try
-            {
+            try {
                 //var id = $hel.data("mediaOverlayData").par.getSmil().spineItemId;
                 var id = par.getSmil().spineItemId;
                 _reader.plugins.annotations.addHighlight(id, par.cfi.partialRangeCfi, HIGHLIGHT_ID,
-                "highlight", //"underline"
-                undefined // styles
-                            );
-            }
-            catch(error)
-            {
+                    "highlight", //"underline"
+                    undefined // styles
+                );
+            } catch (error) {
                 console.error(error);
             }
         }
     };
-    
-// ---- CFI
-//     
-//     function getFirstTextNode(node)
-//     {
-//         if (node.nodeType === Node.TEXT_NODE)
-//         {
-//             if (node.textContent.trim().length > 0)
-//                 return node;
-//         }
-//         
-//         for (var i = 0; i < node.childNodes.length; i++)
-//         {
-//             var child = node.childNodes[i];
-//             var first = getFirstTextNode(child);
-//             if (first)
-//             {
-//                 return first;
-//             }
-//         }
-//         
-//         return undefined;
-//     }
-//     
-//     function getLastTextNode(node)
-//     {
-//         if (node.nodeType === Node.TEXT_NODE)
-//         {
-//             if (node.textContent.trim().length > 0)
-//                 return node;
-//         }
-//         
-//         for (var i = node.childNodes.length-1; i >= 0; i--)
-//         {
-//             var child = node.childNodes[i];
-//             var last = getLastTextNode(child);
-//             if (last)
-//             {
-//                 return last;
-//             }
-//         }
-//         
-//         return undefined;
-//     }
-//     
+
+    // ---- CFI
+    //     
+    //     function getFirstTextNode(node)
+    //     {
+    //         if (node.nodeType === Node.TEXT_NODE)
+    //         {
+    //             if (node.textContent.trim().length > 0)
+    //                 return node;
+    //         }
+    //         
+    //         for (var i = 0; i < node.childNodes.length; i++)
+    //         {
+    //             var child = node.childNodes[i];
+    //             var first = getFirstTextNode(child);
+    //             if (first)
+    //             {
+    //                 return first;
+    //             }
+    //         }
+    //         
+    //         return undefined;
+    //     }
+    //     
+    //     function getLastTextNode(node)
+    //     {
+    //         if (node.nodeType === Node.TEXT_NODE)
+    //         {
+    //             if (node.textContent.trim().length > 0)
+    //                 return node;
+    //         }
+    //         
+    //         for (var i = node.childNodes.length-1; i >= 0; i--)
+    //         {
+    //             var child = node.childNodes[i];
+    //             var last = getLastTextNode(child);
+    //             if (last)
+    //             {
+    //                 return last;
+    //             }
+    //         }
+    //         
+    //         return undefined;
+    //     }
+    //     
 
     this.reset = function() {
-        
-        if (_highlightedCfiPar)
-        {
+
+        if (_highlightedCfiPar) {
             var doc = _highlightedCfiPar.cfi.cfiTextParent.ownerDocument;
 
             if (_reader.plugins.highlights) // same API, new implementation
             {
-                try
-                {
+                try {
                     _reader.plugins.highlights.removeHighlight(HIGHLIGHT_ID);
-        
+
                     var toRemove = undefined;
-                    while ((toRemove = doc.getElementById("start-" + HIGHLIGHT_ID)) !== null)
-                    {
-            console.log("toRemove START");
-            console.log(toRemove);
+                    while ((toRemove = doc.getElementById("start-" + HIGHLIGHT_ID)) !== null) {
+                        console.log("toRemove START");
+                        console.log(toRemove);
                         toRemove.parentNode.removeChild(toRemove);
                     }
-                    while ((toRemove = doc.getElementById("end-" + HIGHLIGHT_ID)) !== null)
-                    {
-            console.log("toRemove END");
-            console.log(toRemove);
+                    while ((toRemove = doc.getElementById("end-" + HIGHLIGHT_ID)) !== null) {
+                        console.log("toRemove END");
+                        console.log(toRemove);
                         toRemove.parentNode.removeChild(toRemove);
                     }
-                }
-                catch(error)
-                {
+                } catch (error) {
                     console.error(error);
                 }
-            }
-            else if (_reader.plugins.annotations) // legacy
+            } else if (_reader.plugins.annotations) // legacy
             {
-                try
-                {
+                try {
                     _reader.plugins.annotations.removeHighlight(HIGHLIGHT_ID);
-        
+
                     var toRemove = undefined;
-                    while ((toRemove = doc.getElementById("start-" + HIGHLIGHT_ID)) !== null)
-                    {
-            console.log("toRemove START");
-            console.log(toRemove);
+                    while ((toRemove = doc.getElementById("start-" + HIGHLIGHT_ID)) !== null) {
+                        console.log("toRemove START");
+                        console.log(toRemove);
                         toRemove.parentNode.removeChild(toRemove);
                     }
-                    while ((toRemove = doc.getElementById("end-" + HIGHLIGHT_ID)) !== null)
-                    {
-            console.log("toRemove END");
-            console.log(toRemove);
+                    while ((toRemove = doc.getElementById("end-" + HIGHLIGHT_ID)) !== null) {
+                        console.log("toRemove END");
+                        console.log(toRemove);
                         toRemove.parentNode.removeChild(toRemove);
                     }
-                }
-                catch(error)
-                {
+                } catch (error) {
                     console.error(error);
                 }
             }
-            
+
             _highlightedCfiPar = undefined;
         }
-        
-        
-        
 
-        if(_highlightedElementPar) {
+
+
+
+        if (_highlightedElementPar) {
 
             var seq = this.adjustParToSeqSyncGranularity(_highlightedElementPar);
             var element = seq.element;
-            if (this.includeParWhenAdjustingToSeqSyncGranularity || _highlightedElementPar !== seq)
-            {
+            if (this.includeParWhenAdjustingToSeqSyncGranularity || _highlightedElementPar !== seq) {
                 $(_highlightedElementPar.element).removeClass(DEFAULT_MO_SUB_SYNC_CLASS);
             }
-            
-            if (_playbackActiveClass && _playbackActiveClass !== "")
-            {
+
+            if (_playbackActiveClass && _playbackActiveClass !== "") {
                 //console.debug("MO RESET playbackActiveClass: " + _playbackActiveClass);
                 $(element.ownerDocument.documentElement).removeClass(_playbackActiveClass);
             }
 
-            if (_activeClass && _activeClass !== "")
-            {
+            if (_activeClass && _activeClass !== "") {
                 //console.debug("MO RESET activeClass: " + _activeClass);
                 $(element).removeClass(_activeClass);
             }
             //else
             //{
-                //console.debug("MO RESET active NO CLASS: " + _activeClass);
-                $(element).removeClass(DEFAULT_MO_ACTIVE_CLASS);
-                //$(element).css("background", '');
+            //console.debug("MO RESET active NO CLASS: " + _activeClass);
+            $(element).removeClass(DEFAULT_MO_ACTIVE_CLASS);
+            //$(element).css("background", '');
             //}
 
             _highlightedElementPar = undefined;
@@ -453,29 +403,24 @@ var MediaOverlayElementHighlighter = function(reader) {
         _playbackActiveClass = "";
     };
 
-    this.adjustParToSeqSyncGranularity = function(par)
-    {
+    this.adjustParToSeqSyncGranularity = function(par) {
         if (!par) return undefined;
-        
+
         var sync = _reader.viewerSettings().mediaOverlaysSynchronizationGranularity;
-        if (sync && sync.length > 0)
-        {
+        if (sync && sync.length > 0) {
             var element = par.element || (par.cfi ? par.cfi.cfiTextParent : undefined);
-            if (!element)
-            {
+            if (!element) {
                 console.error("adjustParToSeqSyncGranularity !element ???");
                 return par; // should never happen!
             }
 
             var seq = par.getFirstSeqAncestorWithEpubType(sync, this.includeParWhenAdjustingToSeqSyncGranularity);
-            if (seq && seq.element)
-            {
+            if (seq && seq.element) {
                 return seq;
             }
         }
-        
+
         return par;
     };
 };
-    return MediaOverlayElementHighlighter;
-});
+export default MediaOverlayElementHighlighter;

@@ -9,3 +9,4 @@ RequireJS_config_plugins_single-bundle.js
 http.log
 api-docs
 .idea
+dist

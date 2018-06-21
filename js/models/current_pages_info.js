@@ -1,5 +1,4 @@
-//  Created by Boris Schneiderman.
-//  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
+//  Copyright (c) 2018 Readium Foundation and/or its licensees. All rights reserved.
 //  
 //  Redistribution and use in source and binary forms, with or without modification, 
 //  are permitted provided that the following conditions are met:
@@ -23,8 +22,6 @@
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-define(function() {
-
 /**
  * Used to report pagination state back to the host application
  *
@@ -35,7 +32,7 @@ define(function() {
  * @param {Models.Spine} spine
  * @param {boolean} isFixedLayout is fixed or reflowable spine item
  * @return CurrentPagesInfo
-*/
+ */
 
 var CurrentPagesInfo = function(spine, isFixedLayout) {
 
@@ -48,7 +45,7 @@ var CurrentPagesInfo = function(spine, isFixedLayout) {
      */
 
     this.isRightToLeft = spine.isRightToLeft();
-    
+
     /**
      * Is the ebook fixed layout or not?
      *
@@ -57,16 +54,16 @@ var CurrentPagesInfo = function(spine, isFixedLayout) {
      */
 
     this.isFixedLayout = isFixedLayout;
-    
+
     /**
      * Counts the number of spine items
      *
      * @property spineItemCount
      * @type number
-     */    
+     */
 
     this.spineItemCount = spine.items.length
-    
+
     /**
      * returns an array of open pages, each array item is a data structure (plain JavaScript object) with the following fields: spineItemPageIndex, spineItemPageCount, idref, spineItemIndex (as per the parameters of the addOpenPage() function below)
      *
@@ -87,7 +84,12 @@ var CurrentPagesInfo = function(spine, isFixedLayout) {
      */
 
     this.addOpenPage = function(spineItemPageIndex, spineItemPageCount, idref, spineItemIndex) {
-        this.openPages.push({spineItemPageIndex: spineItemPageIndex, spineItemPageCount: spineItemPageCount, idref: idref, spineItemIndex: spineItemIndex});
+        this.openPages.push({
+            spineItemPageIndex: spineItemPageIndex,
+            spineItemPageCount: spineItemPageCount,
+            idref: idref,
+            spineItemIndex: spineItemIndex
+        });
 
         this.sort();
     };
@@ -99,7 +101,7 @@ var CurrentPagesInfo = function(spine, isFixedLayout) {
      * @return bool true if turning to the left page is possible 
      */
 
-    this.canGoLeft = function () {
+    this.canGoLeft = function() {
         return this.isRightToLeft ? this.canGoNext() : this.canGoPrev();
     };
 
@@ -110,7 +112,7 @@ var CurrentPagesInfo = function(spine, isFixedLayout) {
      * @return bool true if turning to the right page is possible 
      */
 
-    this.canGoRight = function () {
+    this.canGoRight = function() {
         return this.isRightToLeft ? this.canGoPrev() : this.canGoNext();
     };
 
@@ -123,7 +125,7 @@ var CurrentPagesInfo = function(spine, isFixedLayout) {
 
     this.canGoNext = function() {
 
-        if(this.openPages.length == 0)
+        if (this.openPages.length == 0)
             return false;
 
         var lastOpenPage = this.openPages[this.openPages.length - 1];
@@ -148,7 +150,7 @@ var CurrentPagesInfo = function(spine, isFixedLayout) {
 
     this.canGoPrev = function() {
 
-        if(this.openPages.length == 0)
+        if (this.openPages.length == 0)
             return false;
 
         var firstOpenPage = this.openPages[0];
@@ -174,7 +176,7 @@ var CurrentPagesInfo = function(spine, isFixedLayout) {
 
         this.openPages.sort(function(a, b) {
 
-            if(a.spineItemIndex != b.spineItemIndex) {
+            if (a.spineItemIndex != b.spineItemIndex) {
                 return a.spineItemIndex - b.spineItemIndex;
             }
 
@@ -186,5 +188,4 @@ var CurrentPagesInfo = function(spine, isFixedLayout) {
 
 };
 
-return CurrentPagesInfo;
-});
+export default CurrentPagesInfo;

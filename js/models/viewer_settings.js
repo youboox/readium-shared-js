@@ -1,5 +1,4 @@
-//  Created by Boris Schneiderman.
-//  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
+//  Copyright (c) 2018 Readium Foundation and/or its licensees. All rights reserved.
 //  
 //  Redistribution and use in source and binary forms, with or without modification, 
 //  are permitted provided that the following conditions are met:
@@ -23,7 +22,6 @@
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-define([], function() {
 /**
  *
  * @param settingsData
@@ -46,7 +44,7 @@ var ViewerSettings = function(settingsData) {
      * @property fontSelection
      * @type number
      */
-    
+
     this.fontSelection = 0;
 
     /** 
@@ -64,7 +62,7 @@ var ViewerSettings = function(settingsData) {
      */
 
     this.columnGap = 20;
-    
+
     /** 
      *
      * @property columnMaxWidth
@@ -112,7 +110,7 @@ var ViewerSettings = function(settingsData) {
      */
 
     this.mediaOverlaysSkippables = [];
-    
+
     /** 
      *
      * @property mediaOverlaysEscapables
@@ -126,7 +124,7 @@ var ViewerSettings = function(settingsData) {
      * @property mediaOverlaysEnableClick
      * @type bool
      */
-    
+
     this.mediaOverlaysEnableClick = true;
 
     /** 
@@ -150,14 +148,14 @@ var ViewerSettings = function(settingsData) {
      * @property mediaOverlaysSynchronizationGranularity
      * @type string
      */
-    
+
     this.mediaOverlaysSynchronizationGranularity = "";
 
     /** 
      *
      * @property mediaOverlaysAutomaticPageTurn
      * @type bool
-     */    
+     */
 
     this.mediaOverlaysAutomaticPageTurn = true;
 
@@ -165,27 +163,27 @@ var ViewerSettings = function(settingsData) {
      *
      * @property enableGPUHardwareAccelerationCSS3D
      * @type bool
-     */    
+     */
 
 
     this.enableGPUHardwareAccelerationCSS3D = false;
 
     // -1 ==> disable
     // [0...n] ==> index of transition in pre-defined array
-    
+
     /** 
      *
      * @property pageTransition
      * @type number
-     */        
+     */
 
     this.pageTransition = -1;
- 
+
     /** 
      *
      * @property scroll
      * @type string
-     */        
+     */
 
     this.scroll = "auto";
 
@@ -197,15 +195,12 @@ var ViewerSettings = function(settingsData) {
      * @return     {array} retArr
      */
 
-    function buildArray(str)
-    {
+    function buildArray(str) {
         var retArr = [];
         var arr = str.split(/[\s,;]+/); //','
-        for (var i = 0; i < arr.length; i++)
-        {
+        for (var i = 0; i < arr.length; i++) {
             var item = arr[i].trim();
-            if (item !== "")
-            {
+            if (item !== "") {
                 retArr.push(item);
             }
         }
@@ -223,12 +218,11 @@ var ViewerSettings = function(settingsData) {
 
     function mapProperty(propName, settingsData, functionToApply) {
 
-        if(settingsData[propName] !== undefined) {
-            if(functionToApply) {
+        if (settingsData[propName] !== undefined) {
+            if (functionToApply) {
 
                 self[propName] = functionToApply(settingsData[propName]);
-            }
-            else {
+            } else {
                 self[propName] = settingsData[propName];
             }
         }
@@ -267,5 +261,4 @@ var ViewerSettings = function(settingsData) {
 
     this.update(settingsData);
 };
-    return ViewerSettings;
-});
+export default ViewerSettings;

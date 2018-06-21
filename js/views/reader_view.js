@@ -1,6 +1,4 @@
-//  Created by Boris Schneiderman.
-// Modified by Daniel Weck
-//  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
+//  Copyright (c) 2018 Readium Foundation and/or its licensees. All rights reserved.
 //  
 //  Redistribution and use in source and binary forms, with or without modification, 
 //  are permitted provided that the following conditions are met:
@@ -24,14 +22,27 @@
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-define(["../globals", "jquery", "underscore", "eventEmitter", "./fixed_view", "../helpers", "./iframe_loader", "./internal_links_support",
-        "./media_overlay_data_injector", "./media_overlay_player", "../models/package", "../models/metadata", "../models/page_open_request",
-        "./reflowable_view", "./scroll_view", "../models/style_collection", "../models/switches", "../models/trigger",
-        "../models/viewer_settings", "../models/bookmark_data", "../models/node_range_info", "./external_agent_support"],
-    function (Globals, $, _, EventEmitter, FixedView, Helpers, IFrameLoader, InternalLinksSupport,
-              MediaOverlayDataInjector, MediaOverlayPlayer, Package, Metadata, PageOpenRequest,
-              ReflowableView, ScrollView, StyleCollection, Switches, Trigger,
-              ViewerSettings, BookmarkData, NodeRangeInfo, ExternalAgentSupport) {
+import Globals from "../globals";
+import $ from "jquery";
+import _ from "underscore";
+import EventEmitter from 'eventemitter3';
+import FixedView from "./fixed_view";
+import Helpers from "../helpers";
+import IFrameLoader from "./iframe_loader";
+import InternalLinksSupport from "./internal_links_support";
+import MediaOverlayDataInjector from "./media_overlay_data_injector";
+import MediaOverlayPlayer from "./media_overlay_player";
+import Package from "../models/package";
+import Metadata from "../models/metadata";
+import PageOpenRequest from "../models/page_open_request";
+import ReflowableView from "./reflowable_view";
+import ScrollView from "./scroll_view";
+import StyleCollection from "../models/style_collection";
+import Switches from "../models/switches";
+import Trigger from "../models/trigger";
+import ViewerSettings from "../models/viewer_settings";
+import NodeRangeInfo from "../models/node_range_info";
+import ExternalAgentSupport from "./external_agent_support";
 /**
  * Options passed on the reader from the readium loader/initializer
  *
@@ -46,7 +57,7 @@ define(["../globals", "jquery", "underscore", "eventEmitter", "./fixed_view", ".
  * @param {Views.ReaderView.ReaderOptions} options
  * @constructor
  */
-var ReaderView = function (options) {
+var ReaderView = function(options) {
     $.extend(this, new EventEmitter());
 
     var self = this;
@@ -87,18 +98,17 @@ var ReaderView = function (options) {
 
     if (options.iframeLoader) {
         _iframeLoader = options.iframeLoader;
-    }
-    else {
-        _iframeLoader = new IFrameLoader({mathJaxUrl: options.mathJaxUrl});
+    } else {
+        _iframeLoader = new IFrameLoader({
+            mathJaxUrl: options.mathJaxUrl
+        });
     }
 
-
-    _needsFixedLayoutScalerWorkAround = options.needsFixedLayoutScalerWorkAround;
     /**
      * @returns {boolean}
      */
-    this.needsFixedLayoutScalerWorkAround = function () {
-        return _needsFixedLayoutScalerWorkAround;
+    this.needsFixedLayoutScalerWorkAround = function() {
+        return options.needsFixedLayoutScalerWorkAround;
     };
 
     /**
@@ -107,7 +117,7 @@ var ReaderView = function (options) {
      * @param {Views.ReaderView.ViewCreationOptions} options
      * @returns {*}
      */
-    this.createViewForType = function (viewType, options) {
+    this.createViewForType = function(viewType, options) {
         var createdView;
 
         // NOTE: _$el == options.$viewport
@@ -138,7 +148,7 @@ var ReaderView = function (options) {
      * Returns the current view type of the reader view
      * @returns {ReaderView.ViewType}
      */
-    this.getCurrentViewType = function () {
+    this.getCurrentViewType = function() {
 
         if (!_currentView) {
             return undefined;
@@ -164,7 +174,7 @@ var ReaderView = function (options) {
         return undefined;
     };
 
-    this.getCurrentView = function () {
+    this.getCurrentView = function() {
         return _currentView;
     };
 
@@ -231,11 +241,11 @@ var ReaderView = function (options) {
 
 
         _currentView = self.createViewForType(desiredViewType, viewCreationParams);
-        
+
         Globals.logEvent("READER_VIEW_CREATED", "EMIT", "reader_view.js");
         self.emit(Globals.Events.READER_VIEW_CREATED, desiredViewType);
 
-        _currentView.on(Globals.Events.CONTENT_DOCUMENT_LOADED, function ($iframe, spineItem) {
+        _currentView.on(Globals.Events.CONTENT_DOCUMENT_LOADED, function($iframe, spineItem) {
             var contentDoc = $iframe[0].contentDocument;
 
             Globals.logEvent("CONTENT_DOCUMENT_LOADED", "ON", "reader_view.js (current view) [ " + spineItem.href + " ]");
@@ -256,20 +266,20 @@ var ReaderView = function (options) {
             self.emit(Globals.Events.CONTENT_DOCUMENT_LOADED, $iframe, spineItem);
         });
 
-        _currentView.on(Globals.Events.CONTENT_DOCUMENT_LOAD_START, function ($iframe, spineItem) {
+        _currentView.on(Globals.Events.CONTENT_DOCUMENT_LOAD_START, function($iframe, spineItem) {
 
             Globals.logEvent("CONTENT_DOCUMENT_LOAD_START", "EMIT", "reader_view.js [ " + spineItem.href + " ]");
             self.emit(Globals.Events.CONTENT_DOCUMENT_LOAD_START, $iframe, spineItem);
         });
 
-        _currentView.on(Globals.Events.CONTENT_DOCUMENT_UNLOADED, function ($iframe, spineItem) {
-            
+        _currentView.on(Globals.Events.CONTENT_DOCUMENT_UNLOADED, function($iframe, spineItem) {
+
             Globals.logEvent("CONTENT_DOCUMENT_UNLOADED", "EMIT", "reader_view.js [ " + spineItem.href + " ]");
             self.emit(Globals.Events.CONTENT_DOCUMENT_UNLOADED, $iframe, spineItem);
         });
 
-        _currentView.on(Globals.InternalEvents.CURRENT_VIEW_PAGINATION_CHANGED, function (pageChangeData) {
-            
+        _currentView.on(Globals.InternalEvents.CURRENT_VIEW_PAGINATION_CHANGED, function(pageChangeData) {
+
             Globals.logEvent("InternalEvents.CURRENT_VIEW_PAGINATION_CHANGED", "ON", "reader_view.js");
 
             //we call on onPageChanged explicitly instead of subscribing to the Globals.Events.PAGINATION_CHANGED by
@@ -277,18 +287,18 @@ var ReaderView = function (options) {
             //application will be notified by the same Globals.Events.PAGINATION_CHANGED event
             _mediaOverlayPlayer.onPageChanged(pageChangeData);
 
-            _.defer(function () {
+            _.defer(function() {
                 Globals.logEvent("PAGINATION_CHANGED", "EMIT", "reader_view.js");
                 self.emit(Globals.Events.PAGINATION_CHANGED, pageChangeData);
-                
+
                 if (!pageChangeData.spineItem) return;
-                _.defer(function () {
+                _.defer(function() {
                     _externalAgentSupport.updateContentDocument(pageChangeData.spineItem);
                 });
             });
         });
 
-        _currentView.on(Globals.Events.FXL_VIEW_RESIZED, function () {
+        _currentView.on(Globals.Events.FXL_VIEW_RESIZED, function() {
             Globals.logEvent("FXL_VIEW_RESIZED", "EMIT", "reader_view.js");
             self.emit(Globals.Events.FXL_VIEW_RESIZED);
         })
@@ -299,7 +309,7 @@ var ReaderView = function (options) {
         _currentView.setViewSettings(_viewerSettings, docWillChange);
 
         // we do this to wait until elements are rendered otherwise book is not able to determine view size.
-        setTimeout(function () {
+        setTimeout(function() {
 
             callback(true);
 
@@ -312,7 +322,7 @@ var ReaderView = function (options) {
      *
      * @returns {Models.SpineItem[]}
      */
-    this.getLoadedSpineItems = function () {
+    this.getLoadedSpineItems = function() {
 
         if (_currentView) {
             return _currentView.getLoadedSpineItems();
@@ -333,7 +343,7 @@ var ReaderView = function (options) {
 
         Globals.logEvent("InternalEvents.CURRENT_VIEW_PAGINATION_CHANGED", "OFF", "reader_view.js");
         _currentView.off(Globals.InternalEvents.CURRENT_VIEW_PAGINATION_CHANGED);
-        
+
         _currentView.remove();
         _currentView = undefined;
     }
@@ -343,7 +353,7 @@ var ReaderView = function (options) {
      *
      * @returns {Models.ViewerSettings}
      */
-    this.viewerSettings = function () {
+    this.viewerSettings = function() {
         return _viewerSettings;
     };
 
@@ -352,7 +362,7 @@ var ReaderView = function (options) {
      *
      * @returns {Models.Package}
      */
-    this.package = function () {
+    this.package = function() {
         return _package;
     };
 
@@ -361,7 +371,7 @@ var ReaderView = function (options) {
      *
      * @returns {Models.Metadata}
      */
-    this.metadata = function () {
+    this.metadata = function() {
         return _metadata;
     };
 
@@ -370,7 +380,7 @@ var ReaderView = function (options) {
      *
      * @returns {Models.Spine}
      */
-    this.spine = function () {
+    this.spine = function() {
         return _spine;
     };
 
@@ -379,7 +389,7 @@ var ReaderView = function (options) {
      *
      * @returns {Collections.StyleCollection}
      */
-    this.userStyles = function () {
+    this.userStyles = function() {
         return _userStyles;
     };
 
@@ -399,7 +409,7 @@ var ReaderView = function (options) {
      *
      * @param {Views.ReaderView.OpenBookData} openBookData Open book data object
      */
-    this.openBook = function (openBookData) {
+    this.openBook = function(openBookData) {
 
         var packageData = openBookData.package ? openBookData.package : openBookData;
 
@@ -439,8 +449,7 @@ var ReaderView = function (options) {
 
             if (openBookData.openPageRequest.idref || (openBookData.openPageRequest.contentRefUrl && openBookData.openPageRequest.sourceFileHref)) {
                 pageRequestData = openBookData.openPageRequest;
-            }
-            else {
+            } else {
                 console.log("Invalid page request data: idref required!");
             }
         }
@@ -455,15 +464,12 @@ var ReaderView = function (options) {
 
                     if (pageRequestData.spineItemPageIndex) {
                         fallback = !self.openSpineItemPage(pageRequestData.idref, pageRequestData.spineItemPageIndex, self);
-                    }
-                    else if (pageRequestData.elementCfi) {
+                    } else if (pageRequestData.elementCfi) {
                         fallback = !self.openSpineItemElementCfi(pageRequestData.idref, pageRequestData.elementCfi, self);
-                    }
-                    else {
+                    } else {
                         fallback = !self.openSpineItemPage(pageRequestData.idref, 0, self);
                     }
-                }
-                else {
+                } else {
                     fallback = !self.openContentUrl(pageRequestData.contentRefUrl, pageRequestData.sourceFileHref, self);
                 }
             } catch (err) {
@@ -471,12 +477,11 @@ var ReaderView = function (options) {
                 console.log(err);
                 fallback = true;
             }
-        }
-        else {
+        } else {
             fallback = true;
         }
 
-        if (fallback) {// if we where not asked to open specific page we will open the first one
+        if (fallback) { // if we where not asked to open specific page we will open the first one
 
             var spineItem = _spine.first();
             if (spineItem) {
@@ -499,12 +504,11 @@ var ReaderView = function (options) {
      * Flips the page from left to right.
      * Takes to account the page progression direction to decide to flip to prev or next page.
      */
-    this.openPageLeft = function () {
+    this.openPageLeft = function() {
 
         if (_package.spine.isLeftToRight()) {
             self.openPagePrev();
-        }
-        else {
+        } else {
             self.openPageNext();
         }
     };
@@ -513,12 +517,11 @@ var ReaderView = function (options) {
      * Flips the page from right to left.
      * Takes to account the page progression direction to decide to flip to prev or next page.
      */
-    this.openPageRight = function () {
+    this.openPageRight = function() {
 
         if (_package.spine.isLeftToRight()) {
             self.openPageNext();
-        }
-        else {
+        } else {
             self.openPagePrev();
         }
 
@@ -529,7 +532,7 @@ var ReaderView = function (options) {
      *
      * @returns {boolean}
      */
-    this.isCurrentViewFixedLayout = function () {
+    this.isCurrentViewFixedLayout = function() {
         return _currentView instanceof FixedView;
     };
 
@@ -546,7 +549,7 @@ var ReaderView = function (options) {
      *
      * @param {Views.ReaderView.ZoomOptions} zoom Zoom options
      */
-    this.setZoom = function (zoom) {
+    this.setZoom = function(zoom) {
         // zoom only handled by fixed layout views
         if (self.isCurrentViewFixedLayout()) {
             _currentView.setZoom(zoom);
@@ -558,11 +561,10 @@ var ReaderView = function (options) {
      *
      * @returns {number}
      */
-    this.getViewScale = function () {
+    this.getViewScale = function() {
         if (self.isCurrentViewFixedLayout()) {
             return 100 * _currentView.getViewScale();
-        }
-        else {
+        } else {
             return 100;
         }
     };
@@ -585,9 +587,9 @@ var ReaderView = function (options) {
      * @param {Globals.Views.ReaderView.SettingsData} settingsData Settings data
      * @fires Globals.Events.SETTINGS_APPLIED
      */
-    this.updateSettings = function (settingsData) {
+    this.updateSettings = function(settingsData) {
 
-//console.debug("UpdateSettings: " + JSON.stringify(settingsData));
+        //console.debug("UpdateSettings: " + JSON.stringify(settingsData));
 
         _viewerSettings.update(settingsData);
 
@@ -611,18 +613,12 @@ var ReaderView = function (options) {
 
                 var spineItem = _spine.getItemById(bookMark.idref);
 
-                initViewForItem(spineItem, function (isViewChanged) {
+                initViewForItem(spineItem, function(isViewChanged) {
 
                     if (!isViewChanged) {
                         var docWillChange = false;
                         _currentView.setViewSettings(_viewerSettings, docWillChange);
                     }
-
-                    self.once(ReadiumSDK.Events.PAGINATION_CHANGED, function (pageChangeData)
-                    {
-                        var cfi = new BookmarkData(bookMark.idref, bookMark.contentCFI);
-                        self.debugBookmarkData(cfi);
-                    });
 
                     self.openSpineItemElementCfi(bookMark.idref, bookMark.contentCFI, self);
 
@@ -636,7 +632,7 @@ var ReaderView = function (options) {
                     Globals.logEvent("SETTINGS_APPLIED 1 (view update)", "EMIT", "reader_view.js");
                     self.emit(Globals.Events.SETTINGS_APPLIED);
                 });
-                
+
                 return;
             }
         }
@@ -648,7 +644,7 @@ var ReaderView = function (options) {
     /**
      * Opens the next page.
      */
-    this.openPageNext = function () {
+    this.openPageNext = function() {
 
         if (self.getCurrentViewType() === ReaderView.VIEW_TYPE_SCROLLED_CONTINUOUS) {
             _currentView.openPageNext(self);
@@ -685,7 +681,7 @@ var ReaderView = function (options) {
     /**
      * Opens the previous page.
      */
-    this.openPagePrev = function () {
+    this.openPagePrev = function() {
 
         if (self.getCurrentViewType() === ReaderView.VIEW_TYPE_SCROLLED_CONTINUOUS) {
             _currentView.openPagePrev(self);
@@ -744,7 +740,7 @@ var ReaderView = function (options) {
      * @param {string} elementCfi CFI of the element to be shown
      * @param {object} initiator optional
      */
-    this.openSpineItemElementCfi = function (idref, elementCfi, initiator) {
+    this.openSpineItemElementCfi = function(idref, elementCfi, initiator) {
 
         var spineItem = getSpineItem(idref);
 
@@ -768,7 +764,7 @@ var ReaderView = function (options) {
      * @param {number} pageIndex Zero based index of the page in the current spine item
      * @param {object} initiator optional
      */
-    this.openPageIndex = function (pageIndex, initiator) {
+    this.openPageIndex = function(pageIndex, initiator) {
 
         if (!_currentView) {
             return false;
@@ -784,8 +780,7 @@ var ReaderView = function (options) {
 
             pageRequest = new PageOpenRequest(spineItem, initiator);
             pageRequest.setPageIndex(0);
-        }
-        else {
+        } else {
 
             var spineItems = this.getLoadedSpineItems();
             if (spineItems.length > 0) {
@@ -802,7 +797,7 @@ var ReaderView = function (options) {
     // dir: 0 => new or same page, 1 => previous, 2 => next
     function openPage(pageRequest, dir) {
 
-        initViewForItem(pageRequest.spineItem, function (isViewChanged) {
+        initViewForItem(pageRequest.spineItem, function(isViewChanged) {
 
             if (!isViewChanged) {
                 var docWillChange = true;
@@ -821,7 +816,7 @@ var ReaderView = function (options) {
      * @param {number} pageIndex Zero based index of the page in the spine item
      * @param {object} initiator optional
      */
-    this.openSpineItemPage = function (idref, pageIndex, initiator) {
+    this.openSpineItemPage = function(idref, pageIndex, initiator) {
 
         var spineItem = getSpineItem(idref);
 
@@ -845,15 +840,14 @@ var ReaderView = function (options) {
      * @param {Collections.StyleCollection} styles   Style collection containing selector property and declarations object
      * @param {boolean} doNotUpdateView                         Whether to update the view after the styles are applied.
      */
-    this.setStyles = function (styles, doNotUpdateView) {
+    this.setStyles = function(styles, doNotUpdateView) {
 
         var count = styles.length;
 
         for (var i = 0; i < count; i++) {
             if (styles[i].declarations) {
                 _userStyles.addStyle(styles[i].selector, styles[i].declarations);
-            }
-            else {
+            } else {
                 _userStyles.removeStyle(styles[i].selector);
             }
         }
@@ -867,15 +861,14 @@ var ReaderView = function (options) {
      *
      * @param {Collections.StyleCollection} styles    Style collection containing selector property and declarations object
      */
-    this.setBookStyles = function (styles) {
+    this.setBookStyles = function(styles) {
 
         var count = styles.length;
 
         for (var i = 0; i < count; i++) {
             if (styles[i].declarations) {
                 _bookStyles.addStyle(styles[i].selector, styles[i].declarations);
-            }
-            else {
+            } else {
                 _bookStyles.removeStyle(styles[i].selector);
             }
         }
@@ -893,7 +886,7 @@ var ReaderView = function (options) {
      * @param {string} selector                      The query selector
      * @returns {HTMLElement|undefined}
      */
-    this.getElement = function (spineItemIdref, selector) {
+    this.getElement = function(spineItemIdref, selector) {
 
         if (_currentView) {
             return _currentView.getElement(spineItemIdref, selector);
@@ -909,7 +902,7 @@ var ReaderView = function (options) {
      * @param {string} id                                  The element id
      * @returns {HTMLElement|undefined}
      */
-    this.getElementById = function (spineItemIdref, id) {
+    this.getElementById = function(spineItemIdref, id) {
 
         if (_currentView) {
             return _currentView.getElementById(spineItemIdref, id);
@@ -928,7 +921,7 @@ var ReaderView = function (options) {
      * @param {string[]} [idBlacklist]
      * @returns {HTMLElement|undefined}
      */
-    this.getElementByCfi = function (spineItemIdref, cfi, classBlacklist, elementBlacklist, idBlacklist) {
+    this.getElementByCfi = function(spineItemIdref, cfi, classBlacklist, elementBlacklist, idBlacklist) {
 
         if (_currentView) {
             return _currentView.getElementByCfi(spineItemIdref, cfi, classBlacklist, elementBlacklist, idBlacklist);
@@ -959,7 +952,7 @@ var ReaderView = function (options) {
      * @param {string} sourceFileHref
      * @param offset
      */
-    this.mediaOverlaysOpenContentUrl = function (contentRefUrl, sourceFileHref, offset) {
+    this.mediaOverlaysOpenContentUrl = function(contentRefUrl, sourceFileHref, offset) {
         _mediaOverlayPlayer.mediaOverlaysOpenContentUrl(contentRefUrl, sourceFileHref, offset);
     };
 
@@ -973,7 +966,7 @@ var ReaderView = function (options) {
      * sourceFileHref to resolve contentUrl relative to the package file.
      * @param {object} initiator optional
      */
-    this.openContentUrl = function (contentRefUrl, sourceFileHref, initiator) {
+    this.openContentUrl = function(contentRefUrl, sourceFileHref, initiator) {
 
         var combinedPath = Helpers.ResolveContentRef(contentRefUrl, sourceFileHref);
 
@@ -983,8 +976,7 @@ var ReaderView = function (options) {
         if (hashIndex >= 0) {
             hrefPart = combinedPath.substr(0, hashIndex);
             elementId = combinedPath.substr(hashIndex + 1);
-        }
-        else {
+        } else {
             hrefPart = combinedPath;
             elementId = undefined;
         }
@@ -1013,7 +1005,7 @@ var ReaderView = function (options) {
      * @param {string} elementId id of the element to be shown
      * @param {object} initiator optional
      */
-    this.openSpineItemElementId = function (idref, elementId, initiator) {
+    this.openSpineItemElementId = function(idref, elementId, initiator) {
 
         var spineItem = _spine.getItemById(idref);
         if (!spineItem) {
@@ -1032,54 +1024,6 @@ var ReaderView = function (options) {
         return true;
     };
 
-    //var cfi = new BookmarkData(bookmark.idref, bookmark.contentCFI);
-    this.debugBookmarkData = function(cfi) {
-
-        if (!ReadiumSDK) return;
-
-        var DEBUG = true; // change this to visualize the CFI range
-        if (!DEBUG) return;
-            
-        var paginationInfo = this.getPaginationInfo();
-        console.log(JSON.stringify(paginationInfo));
-        
-        if (paginationInfo.isFixedLayout) return;
-    
-        try {
-            ReadiumSDK._DEBUG_CfiNavigationLogic.clearDebugOverlays();
-            
-        } catch (error) {
-            //ignore
-        }
-        
-        try {
-            console.log(cfi);
-            
-            var range = this.getDomRangeFromRangeCfi(cfi);
-            console.log(range);
-            
-            var res = ReadiumSDK._DEBUG_CfiNavigationLogic.drawDebugOverlayFromDomRange(range);
-            console.log(res);
-        
-            var cfiFirst = ReadiumSDK.reader.getFirstVisibleCfi();
-            console.log(cfiFirst);
-            
-            var cfiLast  = ReadiumSDK.reader.getLastVisibleCfi();
-            console.log(cfiLast);
-            
-        } catch (error) {
-            //ignore
-        }
-        
-        setTimeout(function() {
-            try {
-                ReadiumSDK._DEBUG_CfiNavigationLogic.clearDebugOverlays();
-            } catch (error) {
-                //ignore
-            }
-        }, 2000);
-    };
-
     /**
      * Returns the bookmark associated with currently opened page.
      *
@@ -1094,7 +1038,7 @@ var ReaderView = function (options) {
     /**
      * Resets all the custom styles set by setStyle callers at runtime
      */
-    this.clearStyles = function () {
+    this.clearStyles = function() {
 
         _userStyles.resetStyleValues();
         applyStyles();
@@ -1104,7 +1048,7 @@ var ReaderView = function (options) {
     /**
      * Resets all the custom styles set by setBookStyle callers at runtime
      */
-    this.clearBookStyles = function () {
+    this.clearBookStyles = function() {
 
         if (_currentView) {
 
@@ -1120,7 +1064,7 @@ var ReaderView = function (options) {
      *
      * @returns {boolean}
      */
-    this.isMediaOverlayAvailable = function () {
+    this.isMediaOverlayAvailable = function() {
 
         if (!_mediaOverlayPlayer) return false;
 
@@ -1142,7 +1086,7 @@ var ReaderView = function (options) {
     /**
      * Starts/Stop playing media overlay on current page
      */
-    this.toggleMediaOverlay = function () {
+    this.toggleMediaOverlay = function() {
 
         _mediaOverlayPlayer.toggleMediaOverlay();
     };
@@ -1151,7 +1095,7 @@ var ReaderView = function (options) {
     /**
      * Plays next fragment media overlay
      */
-    this.nextMediaOverlay = function () {
+    this.nextMediaOverlay = function() {
 
         _mediaOverlayPlayer.nextMediaOverlay();
 
@@ -1160,7 +1104,7 @@ var ReaderView = function (options) {
     /**
      * Plays previous fragment media overlay
      */
-    this.previousMediaOverlay = function () {
+    this.previousMediaOverlay = function() {
 
         _mediaOverlayPlayer.previousMediaOverlay();
 
@@ -1169,7 +1113,7 @@ var ReaderView = function (options) {
     /**
      * Plays next available fragment media overlay that is outside of the current escapable scope
      */
-    this.escapeMediaOverlay = function () {
+    this.escapeMediaOverlay = function() {
 
         _mediaOverlayPlayer.escape();
     };
@@ -1178,7 +1122,7 @@ var ReaderView = function (options) {
      * End media overlay TTS
      * @todo Clarify what this does with Daniel.
      */
-    this.ttsEndedMediaOverlay = function () {
+    this.ttsEndedMediaOverlay = function() {
 
         _mediaOverlayPlayer.onTTSEnd();
     };
@@ -1186,7 +1130,7 @@ var ReaderView = function (options) {
     /**
      * Pause currently playing media overlays.
      */
-    this.pauseMediaOverlay = function () {
+    this.pauseMediaOverlay = function() {
 
         _mediaOverlayPlayer.pause();
     };
@@ -1194,7 +1138,7 @@ var ReaderView = function (options) {
     /**
      * Start/Resume playback of media overlays.
      */
-    this.playMediaOverlay = function () {
+    this.playMediaOverlay = function() {
 
         _mediaOverlayPlayer.play();
     };
@@ -1203,27 +1147,27 @@ var ReaderView = function (options) {
      * Determine if media overlays are currently playing.
      * @returns {boolean}
      */
-    this.isPlayingMediaOverlay = function () {
+    this.isPlayingMediaOverlay = function() {
 
         return _mediaOverlayPlayer.isPlaying();
     };
 
-//
-// should use Globals.Events.SETTINGS_APPLIED instead!
-//    this.setRateMediaOverlay = function(rate) {
-//
-//        _mediaOverlayPlayer.setRate(rate);
-//    };
-//    this.setVolumeMediaOverlay = function(volume){
-//
-//        _mediaOverlayPlayer.setVolume(volume);
-//    };
+    //
+    // should use Globals.Events.SETTINGS_APPLIED instead!
+    //    this.setRateMediaOverlay = function(rate) {
+    //
+    //        _mediaOverlayPlayer.setRate(rate);
+    //    };
+    //    this.setVolumeMediaOverlay = function(volume){
+    //
+    //        _mediaOverlayPlayer.setVolume(volume);
+    //    };
 
     /**
      * Get the first visible media overlay element from the currently active content document(s)
      * @returns {HTMLElement|undefined}
      */
-    this.getFirstVisibleMediaOverlayElement = function () {
+    this.getFirstVisibleMediaOverlayElement = function() {
 
         if (_currentView) {
             return _currentView.getFirstVisibleMediaOverlayElement();
@@ -1238,7 +1182,7 @@ var ReaderView = function (options) {
      * @param {HTMLElement} element       The element to make visible
      * @param [initiator]
      */
-    this.insureElementVisibility = function (spineItemId, element, initiator) {
+    this.insureElementVisibility = function(spineItemId, element, initiator) {
 
         if (_currentView) {
             _currentView.insureElementVisibility(spineItemId, element, initiator);
@@ -1279,7 +1223,7 @@ var ReaderView = function (options) {
         if (_resizeMOWasPlaying) self.playMediaOverlay();
     }
 
-    this.handleViewportResize = function (bookmarkToRestore) {
+    this.handleViewportResize = function(bookmarkToRestore) {
         if (!_currentView) return;
 
         _currentView.onViewportResize();
@@ -1293,29 +1237,29 @@ var ReaderView = function (options) {
      * @param {object} context                User specified data passed to the callback function.
      * @returns {undefined}
      */
-    this.addIFrameEventListener = function (eventName, callback, context) {
+    this.addIFrameEventListener = function(eventName, callback, context) {
         _iframeLoader.addIFrameEventListener(eventName, callback, context);
     };
 
-    var BackgroundAudioTrackManager = function (readerView) {
+    var BackgroundAudioTrackManager = function(readerView) {
         var _spineItemIframeMap = {};
         var _wasPlaying = false;
 
         var _callback_playPause = undefined;
-        this.setCallback_PlayPause = function (callback) {
+        this.setCallback_PlayPause = function(callback) {
             _callback_playPause = callback;
         };
 
         var _callback_isAvailable = undefined;
-        this.setCallback_IsAvailable = function (callback) {
+        this.setCallback_IsAvailable = function(callback) {
             _callback_isAvailable = callback;
         };
 
-        this.playPause = function (doPlay) {
+        this.playPause = function(doPlay) {
             _playPause(doPlay);
         };
 
-        var _playPause = function (doPlay) {
+        var _playPause = function(doPlay) {
             if (_callback_playPause) {
                 _callback_playPause(doPlay);
             }
@@ -1336,7 +1280,7 @@ var ReaderView = function (options) {
 
                     var $audios = $("audio", $iframe[0].contentDocument);
 
-                    $.each($audios, function () {
+                    $.each($audios, function() {
 
                         var attr = this.getAttribute("epub:type") || this.getAttribute("type");
 
@@ -1346,44 +1290,44 @@ var ReaderView = function (options) {
 
                         if (doPlay && this.play) {
                             this.play();
-                        }
-                        else if (this.pause) {
+                        } else if (this.pause) {
                             this.pause();
                         }
 
                         return true; // continue (more than one track?)
                     });
                 }
-            }
-            catch (err) {
+            } catch (err) {
                 console.error(err);
             }
         };
 
-        this.setPlayState = function (wasPlaying) {
+        this.setPlayState = function(wasPlaying) {
             _wasPlaying = wasPlaying;
         };
 
-        readerView.on(Globals.Events.CONTENT_DOCUMENT_LOADED, function ($iframe, spineItem) {
+        readerView.on(Globals.Events.CONTENT_DOCUMENT_LOADED, function($iframe, spineItem) {
             Globals.logEvent("CONTENT_DOCUMENT_LOADED", "ON", "reader_view.js (via BackgroundAudioTrackManager) [ " + spineItem.href + " ]");;
-            
+
             try {
                 if (spineItem && spineItem.idref && $iframe && $iframe[0]) {
                     // console.log("CONTENT_DOCUMENT_LOADED");
                     // console.debug(spineItem.href);
                     // console.debug(spineItem.idref);
 
-                    _spineItemIframeMap[spineItem.idref] = {"$iframe": $iframe, href: spineItem.href};
+                    _spineItemIframeMap[spineItem.idref] = {
+                        "$iframe": $iframe,
+                        href: spineItem.href
+                    };
                 }
-            }
-            catch (err) {
+            } catch (err) {
                 console.error(err);
             }
         });
 
-        readerView.on(Globals.Events.PAGINATION_CHANGED, function (pageChangeData) {
+        readerView.on(Globals.Events.PAGINATION_CHANGED, function(pageChangeData) {
             Globals.logEvent("PAGINATION_CHANGED", "ON", "reader_view.js (via BackgroundAudioTrackManager)");
-            
+
             // console.log("PAGINATION_CHANGED");
             // console.debug(pageChangeData);
             //
@@ -1421,8 +1365,7 @@ var ReaderView = function (options) {
                         for (var i = 0; i < pageChangeData.paginationInfo.openPages.length; i++) {
                             if (pageChangeData.paginationInfo.openPages[i].idref === prop) {
                                 isDisplayed = true;
-                            }
-                            else {
+                            } else {
                                 allSame = false;
                             }
                         }
@@ -1440,7 +1383,7 @@ var ReaderView = function (options) {
                         var href = data.href;
 
                         var $audios = $("audio", $iframe[0].contentDocument);
-                        $.each($audios, function () {
+                        $.each($audios, function() {
 
                             var attr = this.getAttribute("epub:type") || this.getAttribute("type");
 
@@ -1457,8 +1400,7 @@ var ReaderView = function (options) {
                             if (isActive) {
                                 // DEBUG!
                                 //$(this).css({border:"2px solid green"});
-                            }
-                            else {
+                            } else {
                                 if (this.pause) this.pause();
 
                                 // DEBUG!
@@ -1471,14 +1413,12 @@ var ReaderView = function (options) {
                         });
 
                         continue;
-                    }
-                    else {
+                    } else {
                         if (_spineItemIframeMap[prop]) _spineItemIframeMap[prop]["$iframe"] = undefined;
                         _spineItemIframeMap[prop] = undefined;
                     }
                 }
-            }
-            catch (err) {
+            } catch (err) {
                 console.error(err);
             }
 
@@ -1489,19 +1429,17 @@ var ReaderView = function (options) {
             if (atLeastOne) {
                 if (_wasPlaying) {
                     _playPause(true);
-                }
-                else {
+                } else {
                     _playPause(false); // ensure correct paused state
                 }
-            }
-            else {
+            } else {
                 _playPause(false); // ensure correct paused state
             }
         });
 
-        readerView.on(Globals.Events.MEDIA_OVERLAY_STATUS_CHANGED, function (value) {
+        readerView.on(Globals.Events.MEDIA_OVERLAY_STATUS_CHANGED, function(value) {
             Globals.logEvent("MEDIA_OVERLAY_STATUS_CHANGED", "ON", "reader_view.js (via BackgroundAudioTrackManager)");
-            
+
             if (!value.smilIndex) return;
             var packageModel = readerView.package();
             var smil = packageModel.media_overlay.smilAt(value.smilIndex);
@@ -1546,11 +1484,14 @@ var ReaderView = function (options) {
     this.backgroundAudioTrackManager = new BackgroundAudioTrackManager(self);
 
     function getCfisForVisibleRegion() {
-        return {firstVisibleCfi: self.getFirstVisibleCfi(), lastVisibleCfi: self.getLastVisibleCfi()};
+        return {
+            firstVisibleCfi: self.getFirstVisibleCfi(),
+            lastVisibleCfi: self.getLastVisibleCfi()
+        };
     }
 
 
-    this.isVisibleSpineItemElementCfi = function(spineIdRef, partialCfi){
+    this.isVisibleSpineItemElementCfi = function(spineIdRef, partialCfi) {
         var spineItem = getSpineItem(spineIdRef);
 
         if (!spineItem) {
@@ -1559,10 +1500,10 @@ var ReaderView = function (options) {
 
         if (_currentView) {
 
-            if(!partialCfi || (partialCfi && partialCfi === '')){
+            if (!partialCfi || (partialCfi && partialCfi === '')) {
                 var spines = _currentView.getLoadedSpineItems();
-                for(var i = 0, count = spines.length; i < count; i++) {
-                    if(spines[i].idref == spineIdRef){
+                for (var i = 0, count = spines.length; i < count; i++) {
+                    if (spines[i].idref == spineIdRef) {
                         return true;
                     }
                 }
@@ -1582,7 +1523,7 @@ var ReaderView = function (options) {
      */
     this.getElements = function(spineItemIdref, selector) {
 
-        if(_currentView) {
+        if (_currentView) {
             return _currentView.getElements(spineItemIdref, selector);
         }
 
@@ -1595,7 +1536,7 @@ var ReaderView = function (options) {
      * @param {HTMLElement} element The element.
      * @returns {boolean}
      */
-    this.isElementVisible = function (element) {
+    this.isElementVisible = function(element) {
         return _currentView.isElementVisible($(element));
 
     };
@@ -1606,7 +1547,7 @@ var ReaderView = function (options) {
      * @param {string} partialCfi    The partial CFI that is the range CFI to resolve
      * @returns {Models.NodeRangeInfo}
      */
-    this.getNodeRangeInfoFromCfi = function (spineIdRef, partialCfi) {
+    this.getNodeRangeInfoFromCfi = function(spineIdRef, partialCfi) {
         if (_currentView && spineIdRef && partialCfi) {
             var nodeRangeInfo = _currentView.getNodeRangeInfoFromCfi(spineIdRef, partialCfi);
             if (nodeRangeInfo) {
@@ -1623,7 +1564,7 @@ var ReaderView = function (options) {
      *
      * @returns {ReadiumSDK.Models.CurrentPagesInfo}
      */
-    this.getPaginationInfo = function(){
+    this.getPaginationInfo = function() {
         return _currentView.getPaginationInfo();
     };
     /**
@@ -1741,7 +1682,7 @@ var ReaderView = function (options) {
      * @param [spineItemIdref] Required for fixed layout views
      * @returns {string}
      */
-    this.getVisibleCfiFromPoint = function (x, y, precisePoint, spineItemIdref) {
+    this.getVisibleCfiFromPoint = function(x, y, precisePoint, spineItemIdref) {
         if (_currentView) {
             return _currentView.getVisibleCfiFromPoint(x, y, precisePoint, spineItemIdref);
         }
@@ -1775,7 +1716,7 @@ var ReaderView = function (options) {
         }
         return undefined;
     };
-       
+
     /**
      * Useful for getting a CFI that's as close as possible to an invisible (not rendered, zero client rects) element
      * @param {HTMLElement} element
@@ -1787,7 +1728,7 @@ var ReaderView = function (options) {
         }
         return undefined;
     };
-    
+
 };
 
 /**
@@ -1802,5 +1743,4 @@ ReaderView.VIEW_TYPE_COLUMNIZED = 1;
 ReaderView.VIEW_TYPE_FIXED = 2;
 ReaderView.VIEW_TYPE_SCROLLED_DOC = 3;
 ReaderView.VIEW_TYPE_SCROLLED_CONTINUOUS = 4;
-return ReaderView;
-});
+export default ReaderView;

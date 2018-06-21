@@ -1,5 +1,4 @@
-//  Created by Boris Schneiderman.
-//  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
+//  Copyright (c) 2018 Readium Foundation and/or its licensees. All rights reserved.
 //  
 //  Redistribution and use in source and binary forms, with or without modification, 
 //  are permitted provided that the following conditions are met:
@@ -23,7 +22,6 @@
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-define(function() {
 /**
  * Representation of opening page request
  * Provides the spine item to be opened and one of the following properties:
@@ -111,7 +109,7 @@ var PageOpenRequest = function(spineItem, initiator) {
         this.reset();
         this.elementId = elementId;
     };
-    
+
     /**
      * Sets the CFI of the current element
      *
@@ -137,5 +135,4 @@ var PageOpenRequest = function(spineItem, initiator) {
 
 };
 
-return PageOpenRequest;
-});
+export default PageOpenRequest;

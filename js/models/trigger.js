@@ -1,7 +1,4 @@
-//  LauncherOSX
-//
-//  Created by Boris Schneiderman.
-//  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
+//  Copyright (c) 2018 Readium Foundation and/or its licensees. All rights reserved.
 //  
 //  Redistribution and use in source and binary forms, with or without modification, 
 //  are permitted provided that the following conditions are met:
@@ -25,7 +22,8 @@
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-define(["jquery", "../helpers"], function($, Helpers) {
+import $ from "jquery";
+import Helpers from "../helpers";
 /**
  * Trigger in an epub publication.
  *
@@ -37,7 +35,7 @@ define(["jquery", "../helpers"], function($, Helpers) {
 var Trigger = function(domNode) {
 
     var $el = $(domNode);
-    
+
     /**
      * epub trigger action
      *
@@ -45,8 +43,8 @@ var Trigger = function(domNode) {
      * @type String
      */
 
-    this.action     = $el.attr("action");
-    
+    this.action = $el.attr("action");
+
     /**
      * epub trigger ref
      *
@@ -54,8 +52,8 @@ var Trigger = function(domNode) {
      * @type String
      */
 
-    this.ref         = $el.attr("ref");
-    
+    this.ref = $el.attr("ref");
+
     /**
      * epub trigger event
      *
@@ -63,8 +61,8 @@ var Trigger = function(domNode) {
      * @type String
      */
 
-    this.event         = $el.attr("ev:event");
-    
+    this.event = $el.attr("ev:event");
+
     /**
      * epub trigger observer
      *
@@ -72,8 +70,8 @@ var Trigger = function(domNode) {
      * @type String
      */
 
-    this.observer     = $el.attr("ev:observer");
-    this.ref         = $el.attr("ref");
+    this.observer = $el.attr("ev:observer");
+    this.ref = $el.attr("ref");
 };
 
 /**
@@ -97,7 +95,7 @@ Trigger.register = function(dom) {
  */
 
 Trigger.prototype.subscribe = function(dom) {
-    
+
     var selector = "#" + this.observer;
     var that = this;
     $(selector, dom).on(this.event, function() {
@@ -114,9 +112,8 @@ Trigger.prototype.subscribe = function(dom) {
 
 Trigger.prototype.execute = function(dom) {
 
-    var $target = $( "#" + Helpers.escapeJQuerySelector(this.ref), dom);
-    switch(this.action)
-    {
+    var $target = $("#" + Helpers.escapeJQuerySelector(this.ref), dom);
+    switch (this.action) {
         case "show":
             $target.css("visibility", "visible");
             break;
@@ -143,9 +140,8 @@ Trigger.prototype.execute = function(dom) {
             console.log("do not no how to handle trigger " + this.action);
             return null;
     }
-    return false;   // do not propagate click event; it was already handled
+    return false; // do not propagate click event; it was already handled
 
 };
 
-    return Trigger;
-});
+export default Trigger;

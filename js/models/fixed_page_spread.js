@@ -1,5 +1,4 @@
-  //  Created by Boris Schneiderman.
-//  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
+//  Copyright (c) 2018 Readium Foundation and/or its licensees. All rights reserved.
 //  
 //  Redistribution and use in source and binary forms, with or without modification, 
 //  are permitted provided that the following conditions are met:
@@ -23,7 +22,6 @@
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-define(function() {
 /**
  * Spread the page 
  *
@@ -38,7 +36,7 @@ var Spread = function(spine, isSyntheticSpread) {
     var self = this;
 
     this.spine = spine;
-    
+
     this.leftItem = undefined;
     this.rightItem = undefined;
     this.centerItem = undefined;
@@ -75,10 +73,9 @@ var Spread = function(spine, isSyntheticSpread) {
 
     this.openFirst = function() {
 
-        if( this.spine.items.length == 0 ) {
+        if (this.spine.items.length == 0) {
             resetItems();
-        }
-        else {
+        } else {
             this.openItem(this.spine.first());
         }
     };
@@ -91,10 +88,9 @@ var Spread = function(spine, isSyntheticSpread) {
 
     this.openLast = function() {
 
-        if( this.spine.items.length == 0 ) {
+        if (this.spine.items.length == 0) {
             resetItems();
-        }
-        else {
+        } else {
             this.openItem(this.spine.last());
         }
     };
@@ -113,14 +109,11 @@ var Spread = function(spine, isSyntheticSpread) {
         var position = getItemPosition(item);
         setItemToPosition(item, position);
 
-        if(position != Spread.POSITION_CENTER && this.spine.isValidLinearItem(item.index)) { // && item.isRenditionSpreadAllowed() not necessary, see getItemPosition() below
+        if (position != Spread.POSITION_CENTER && this.spine.isValidLinearItem(item.index)) { // && item.isRenditionSpreadAllowed() not necessary, see getItemPosition() below
             var neighbour = getNeighbourItem(item);
-            if(neighbour) {
+            if (neighbour) {
                 var neighbourPos = getItemPosition(neighbour);
-                if(neighbourPos != position
-                    && neighbourPos != Spread.POSITION_CENTER
-                    && !neighbour.isReflowable()
-                    && neighbour.isRenditionSpreadAllowed())  {
+                if (neighbourPos != position && neighbourPos != Spread.POSITION_CENTER && !neighbour.isReflowable() && neighbour.isRenditionSpreadAllowed()) {
                     setItemToPosition(neighbour, neighbourPos);
                 }
             }
@@ -150,15 +143,13 @@ var Spread = function(spine, isSyntheticSpread) {
 
     function setItemToPosition(item, position) {
 
-        if(position == Spread.POSITION_LEFT) {
+        if (position == Spread.POSITION_LEFT) {
             self.leftItem = item;
-        }
-        else if (position == Spread.POSITION_RIGHT) {
+        } else if (position == Spread.POSITION_RIGHT) {
             self.rightItem = item;
-        }
-        else {
+        } else {
 
-            if(position != Spread.POSITION_CENTER) {
+            if (position != Spread.POSITION_CENTER) {
                 console.error("Unrecognized position value");
             }
 
@@ -175,13 +166,13 @@ var Spread = function(spine, isSyntheticSpread) {
      */
 
     function getItemPosition(item) {
-        
+
         // includes !item.isRenditionSpreadAllowed() ("rendition:spread-none") ==> force center position
-        if(!_isSyntheticSpread) {
+        if (!_isSyntheticSpread) {
             return Spread.POSITION_CENTER;
         }
 
-        if(item.isLeftPage()) {
+        if (item.isLeftPage()) {
             return Spread.POSITION_LEFT;
         }
 
@@ -196,20 +187,19 @@ var Spread = function(spine, isSyntheticSpread) {
      * Opens the next item
      *
      * @method     openNext
-     */ 
+     */
 
     this.openNext = function() {
 
         var items = this.validItems();
 
-        if(items.length == 0) {
+        if (items.length == 0) {
 
             this.openFirst();
-        }
-        else {
+        } else {
 
             var nextItem = this.spine.nextItem(items[items.length - 1]);
-            if(nextItem) {
+            if (nextItem) {
 
                 this.openItem(nextItem);
             }
@@ -220,19 +210,18 @@ var Spread = function(spine, isSyntheticSpread) {
      * Opens the previous item
      *
      * @method     openPrev
-     */ 
+     */
 
     this.openPrev = function() {
 
         var items = this.validItems();
 
-        if(items.length == 0) {
+        if (items.length == 0) {
             this.openLast();
-        }
-        else {
+        } else {
 
             var prevItem = this.spine.prevItem(items[0]);
-            if(prevItem) {
+            if (prevItem) {
 
                 this.openItem(prevItem);
 
@@ -245,15 +234,15 @@ var Spread = function(spine, isSyntheticSpread) {
      *
      * @method     validItems
      * @return     {array} 
-     */ 
+     */
 
     this.validItems = function() {
 
         var arr = [];
 
-        if(this.leftItem) arr.push(this.leftItem);
-        if(this.rightItem) arr.push(this.rightItem);
-        if(this.centerItem) arr.push(this.centerItem);
+        if (this.leftItem) arr.push(this.leftItem);
+        if (this.rightItem) arr.push(this.rightItem);
+        if (this.centerItem) arr.push(this.centerItem);
 
         arr.sort(function(a, b) {
             return a.index - b.index;
@@ -268,15 +257,15 @@ var Spread = function(spine, isSyntheticSpread) {
      * @method     getNeighbourItem
      * @param      {Models.SpineItem} item
      * @return     {Models.SpineItem} item
-     */ 
+     */
 
     function getNeighbourItem(item) {
 
-        if(item.isLeftPage()) {
+        if (item.isLeftPage()) {
             return self.spine.isRightToLeft() ? self.spine.prevItem(item) : self.spine.nextItem(item);
         }
 
-        if(item.isRightPage()) {
+        if (item.isRightPage()) {
             return self.spine.isRightToLeft() ? self.spine.nextItem(item) : self.spine.prevItem(item);
         }
 
@@ -289,5 +278,4 @@ Spread.POSITION_LEFT = "left";
 Spread.POSITION_RIGHT = "right";
 Spread.POSITION_CENTER = "center";
 
-return Spread;
-});
+export default Spread;

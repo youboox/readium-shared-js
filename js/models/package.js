@@ -1,5 +1,4 @@
-//  Created by Boris Schneiderman.
-//  Copyright (c) 2016 Readium Foundation and/or its licensees. All rights reserved.
+//  Copyright (c) 2018 Readium Foundation and/or its licensees. All rights reserved.
 //  
 //  Redistribution and use in source and binary forms, with or without modification, 
 //  are permitted provided that the following conditions are met:
@@ -22,7 +21,13 @@
 //  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
-define(['../helpers','./spine_item','./spine','./media_overlay', './package_data', 'URIjs'], function (Helpers, SpineItem, Spine, MediaOverlay, PackageData, URI) {
+
+import Helpers from '../helpers';
+import SpineItem from './spine_item';
+import Spine from './spine';
+import MediaOverlay from './media_overlay';
+import PackageData from './package_data';
+import URI from 'urijs';
 
 /**
  *  Wrapper of the Package object, created in openBook()
@@ -31,10 +36,10 @@ define(['../helpers','./spine_item','./spine','./media_overlay', './package_data
  * @constructor
  * @param {Models.PackageData} packageData container for package properties 
  */
-var Package = function(packageData){
+var Package = function(packageData) {
 
     var self = this;
-    
+
     /**
      * The associated spine object
      *
@@ -59,41 +64,41 @@ var Package = function(packageData){
      *
      */
     this.rootUrlMO = undefined;
- 
+
     /**
      * The Media Overlays object
      *
      * @property media_overlay 
      * @type     Models.MediaOverlay
      *
-     */   
+     */
     this.media_overlay = undefined;
-    
+
     /**
      * The rendition viewport (as per the EPUB3 specification)
      *
      * @property rendition_viewport 
      * @type     String
      *
-     */   
+     */
     this.rendition_viewport = undefined;
-    
+
     /**
      * The rendition flow (as per the EPUB3 specification)
      *
      * @property rendition_flow 
      * @type     String
      *
-     */   
+     */
     this.rendition_flow = undefined;
-    
+
     /**
      * The rendition layout (as per the EPUB3 specification)
      *
      * @property rendition_layout 
      * @type     String
      *
-     */   
+     */
     this.rendition_layout = undefined;
 
     /**
@@ -102,7 +107,7 @@ var Package = function(packageData){
      * @property rendition_spread 
      * @type     String
      *
-     */   
+     */
     this.rendition_spread = undefined;
 
     /**
@@ -111,7 +116,7 @@ var Package = function(packageData){
      * @property rendition_orientation 
      * @type     String
      *
-     */   
+     */
     this.rendition_orientation = undefined;
 
     /**
@@ -122,33 +127,32 @@ var Package = function(packageData){
      * @return     {String} the resolved relative URL.
      */
     this.resolveRelativeUrlMO = function(relativeUrl) {
-        
+
         var relativeUrlUri = undefined;
         try {
             relativeUrlUri = new URI(relativeUrl);
-        } catch(err) {
+        } catch (err) {
             console.error(err);
             console.log(relativeUrl);
         }
         if (relativeUrlUri && relativeUrlUri.is("absolute")) return relativeUrl; //relativeUrlUri.scheme() == "http://", "https://", "data:", etc.
 
 
-        if(self.rootUrlMO && self.rootUrlMO.length > 0) {
+        if (self.rootUrlMO && self.rootUrlMO.length > 0) {
 
             var url = self.rootUrlMO;
-            
+
             try {
                 //url = new URI(relativeUrl).absoluteTo(url).search('').hash('').toString();
                 url = new URI(url).search('').hash('').toString();
-            } catch(err) {
+            } catch (err) {
                 console.error(err);
                 console.log(url);
             }
-            
-            if(Helpers.EndsWith(url, "/")){
+
+            if (Helpers.EndsWith(url, "/")) {
                 return url + relativeUrl;
-            }
-            else {
+            } else {
                 return url + "/" + relativeUrl;
             }
         }
@@ -168,29 +172,28 @@ var Package = function(packageData){
         var relativeUrlUri = undefined;
         try {
             relativeUrlUri = new URI(relativeUrl);
-        } catch(err) {
+        } catch (err) {
             console.error(err);
             console.log(relativeUrl);
         }
         if (relativeUrlUri && relativeUrlUri.is("absolute")) return relativeUrl; //relativeUrlUri.scheme() == "http://", "https://", "data:", etc.
 
-        
-        if(self.rootUrl) {
+
+        if (self.rootUrl) {
 
             var url = self.rootUrl;
-            
+
             try {
                 //url = new URI(relativeUrl).absoluteTo(url).search('').hash('').toString();
                 url = new URI(url).search('').hash('').toString();
-            } catch(err) {
+            } catch (err) {
                 console.error(err);
                 console.log(url);
             }
-            
-            if(Helpers.EndsWith(url, "/")){
+
+            if (Helpers.EndsWith(url, "/")) {
                 return url + relativeUrl;
-            }
-            else {
+            } else {
                 return url + "/" + relativeUrl;
             }
         }
@@ -217,9 +220,9 @@ var Package = function(packageData){
     this.isReflowable = function() {
         return !self.isFixedLayout();
     };
-    
-    if(packageData) {
-        
+
+    if (packageData) {
+
         this.rootUrl = packageData.rootUrl;
         this.rootUrlMO = packageData.rootUrlMO;
 
@@ -230,13 +233,12 @@ var Package = function(packageData){
         this.rendition_flow = packageData.rendition_flow;
         this.rendition_orientation = packageData.rendition_orientation;
         this.rendition_spread = packageData.rendition_spread;
-        
+
         this.spine = new Spine(this, packageData.spine);
 
         this.media_overlay = MediaOverlay.fromDTO(packageData.media_overlay, this);
     }
 };
 
-return Package;
-});
+export default Package;
 

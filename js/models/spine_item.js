@@ -1,5 +1,4 @@
-//  Created by Boris Schneiderman.
-//  Copyright (c) 2016 Readium Foundation and/or its licensees. All rights reserved.
+//  Copyright (c) 2018 Readium Foundation and/or its licensees. All rights reserved.
 //  
 //  Redistribution and use in source and binary forms, with or without modification, 
 //  are permitted provided that the following conditions are met:
@@ -23,8 +22,6 @@
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-define([], function() {
-
 /**
  * Wrapper of the SpineItem object received from the host application
  *
@@ -35,7 +32,7 @@ define([], function() {
  * @param {Models.Spine} spine parent spine
  *
  */
-var SpineItem = function(itemData, index, spine){
+var SpineItem = function(itemData, index, spine) {
 
     var self = this;
 
@@ -88,7 +85,7 @@ var SpineItem = function(itemData, index, spine){
      * @default  auto
      */
     this.page_spread = itemData.page_spread;
-    
+
     /**
      * A string specifying the height and width from the rendition:viewport tag.
      * Note: This is deprecated in EPUB 3.1
@@ -98,7 +95,7 @@ var SpineItem = function(itemData, index, spine){
      * @default  None
      */
     this.rendition_viewport = itemData.rendition_viewport;
-    
+
     /**
      * A string specifying the type of synthetic spread for ALL spine items, where
      * where rendtion:spread-* can be left, right or center or auto
@@ -129,7 +126,7 @@ var SpineItem = function(itemData, index, spine){
      * @default  reflowable
      */
     this.rendition_layout = itemData.rendition_layout;
-    
+
     /**
      * A string specifying how "overflow" content that exceeds the current viewport should
      * be laid out.  Possible values are paginated, scrolled-continuous, scrolled-doc or auto
@@ -139,7 +136,7 @@ var SpineItem = function(itemData, index, spine){
      * @default  auto
      */
     this.rendition_flow = itemData.rendition_flow;
-    
+
     /**
      * The ID, if any, of the root SMIL element of the media overlay for the document.
      *
@@ -193,13 +190,13 @@ var SpineItem = function(itemData, index, spine){
     /* private method (validateSpread) */
     function validateSpread() {
 
-        if(!self.page_spread) {
+        if (!self.page_spread) {
             return;
         }
 
-        if( self.page_spread != SpineItem.SPREAD_LEFT &&
+        if (self.page_spread != SpineItem.SPREAD_LEFT &&
             self.page_spread != SpineItem.SPREAD_RIGHT &&
-            self.page_spread != SpineItem.SPREAD_CENTER ) {
+            self.page_spread != SpineItem.SPREAD_CENTER) {
 
             console.error(self.page_spread + " is not a recognized spread type");
         }
@@ -212,7 +209,7 @@ var SpineItem = function(itemData, index, spine){
      * @return     {Boolean} TRUE if spread=none has NOT been specified, else FALSE
      */
     this.isRenditionSpreadAllowed = function() {
-        
+
         var rendition_spread = self.getRenditionSpread();
         return !rendition_spread || rendition_spread != SpineItem.RENDITION_SPREAD_NONE;
     };
@@ -266,15 +263,14 @@ var SpineItem = function(itemData, index, spine){
      * @return     {Boolean} 
      */
     this.isFixedLayout = function() {
-        
+
         // cannot use isPropertyValueSetForItemOrPackage() here!
 
         var isLayoutExplicitlyDefined = self.getRenditionLayout();
 
-        if(isLayoutExplicitlyDefined) {
+        if (isLayoutExplicitlyDefined) {
 
-            if (self.rendition_layout)
-            {
+            if (self.rendition_layout) {
                 if (self.rendition_layout === SpineItem.RENDITION_LAYOUT_PREPAGINATED) return true;
                 if (self.rendition_layout === SpineItem.RENDITION_LAYOUT_REFLOWABLE) return false;
             }
@@ -295,15 +291,15 @@ var SpineItem = function(itemData, index, spine){
      * @method     getRenditionFlow
      * @return     {String} 
      */
-   this.getRenditionFlow = function() {
+    this.getRenditionFlow = function() {
 
-        if(self.rendition_flow) {
+        if (self.rendition_flow) {
             return self.rendition_flow;
         }
 
         return self.spine.package.rendition_flow;
     };
-    
+
     /**
      * Returns the rendition:viewport, if any. Note that if the spineItem 
      * has an override (local value) that is returned, else the package's 
@@ -313,9 +309,9 @@ var SpineItem = function(itemData, index, spine){
      * @method     getRenditionViewport
      * @return     {Boolean} 
      */
-     this.getRenditionViewport = function() {
+    this.getRenditionViewport = function() {
 
-        if(self.rendition_viewport) {
+        if (self.rendition_viewport) {
             return self.rendition_viewport;
         }
 
@@ -332,7 +328,7 @@ var SpineItem = function(itemData, index, spine){
      */
     this.getRenditionSpread = function() {
 
-        if(self.rendition_spread) {
+        if (self.rendition_spread) {
             return self.rendition_spread;
         }
 
@@ -349,7 +345,7 @@ var SpineItem = function(itemData, index, spine){
      */
     this.getRenditionOrientation = function() {
 
-        if(self.rendition_orientation) {
+        if (self.rendition_orientation) {
             return self.rendition_orientation;
         }
 
@@ -366,7 +362,7 @@ var SpineItem = function(itemData, index, spine){
      */
     this.getRenditionLayout = function() {
 
-        if(self.rendition_layout) {
+        if (self.rendition_layout) {
             return self.rendition_layout;
         }
 
@@ -386,11 +382,11 @@ var SpineItem = function(itemData, index, spine){
      */
     function isPropertyValueSetForItemOrPackage(propName, propValue) {
 
-        if(self[propName]) {
+        if (self[propName]) {
             return self[propName] === propValue;
         }
 
-        if(self.spine.package[propName]) {
+        if (self.spine.package[propName]) {
             return self.spine.package[propName] === propValue;
         }
 
@@ -550,18 +546,17 @@ SpineItem.RENDITION_FLOW_AUTO = "auto";
  */
 SpineItem.alternateSpread = function(spread) {
 
-    if(spread === SpineItem.SPREAD_LEFT) {
+    if (spread === SpineItem.SPREAD_LEFT) {
         return SpineItem.SPREAD_RIGHT;
     }
 
-    if(spread === SpineItem.SPREAD_RIGHT) {
+    if (spread === SpineItem.SPREAD_RIGHT) {
         return SpineItem.SPREAD_LEFT;
     }
 
     return spread;
 
 };
-    return SpineItem;
-});
+export default SpineItem;
 
 

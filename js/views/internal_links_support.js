@@ -1,5 +1,5 @@
-//  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
-// 
+//  Copyright (c) 2018 Readium Foundation and/or its licensees. All rights reserved.
+//
 //  Redistribution and use in source and binary forms, with or without modification, 
 //  are permitted provided that the following conditions are met:
 //  1. Redistributions of source code must retain the above copyright notice, this 
@@ -22,7 +22,10 @@
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-define(['jquery', '../helpers', 'readium_cfi_js', 'URIjs'], function($, Helpers, EPUBcfi, URI) {
+import $ from 'jquery';
+import Helpers from '../helpers';
+import * as EPUBcfi from 'readium-cfi-js';
+import URI from 'urijs';
 /**
  *
  * @param reader
@@ -38,11 +41,11 @@ var InternalLinksSupport = function(reader) {
         var bungIx = fullCfi.indexOf("!");
         var endIx = fullCfi.indexOf(")");
 
-        if(bungIx == -1) {
+        if (bungIx == -1) {
             return undefined;
         }
 
-        if(endIx == -1) {
+        if (endIx == -1) {
             endIx = fullCfi.length;
         }
 
@@ -66,7 +69,7 @@ var InternalLinksSupport = function(reader) {
 
         var absoluteOpfUri = getAbsoluteUriRelativeToSpineItem(hrefUri, spineItem);
 
-        if(!absoluteOpfUri) {
+        if (!absoluteOpfUri) {
             console.error("Unable to resolve " + hrefUri.href())
             return;
         }
@@ -75,11 +78,11 @@ var InternalLinksSupport = function(reader) {
 
         var absPath = absoluteOpfUri.toString();
 
-        absPath = Helpers.RemoveFromString(absPath, "#" +  fullCfi);
+        absPath = Helpers.RemoveFromString(absPath, "#" + fullCfi);
 
         readOpfFile(absPath, function(opfText) {
 
-            if(!opfText) {
+            if (!opfText) {
                 return;
             }
 
@@ -87,27 +90,25 @@ var InternalLinksSupport = function(reader) {
             var packageDom = parser.parseFromString(opfText, 'text/xml');
             var cfi = splitCfi(fullCfi);
 
-            if(!cfi) {
+            if (!cfi) {
                 console.warn("Unable to split cfi:" + fullCfi);
                 return;
             }
 
             var contentDocRef = EPUBcfi.Interpreter.getContentDocHref("epubcfi(" + cfi.spineItemCfi + ")", packageDom);
 
-            if(contentDocRef) {
+            if (contentDocRef) {
 
                 var newSpineItem = reader.spine().getItemByHref(contentDocRef);
-                if(newSpineItem) {
+                if (newSpineItem) {
 
                     reader.openSpineItemElementCfi(newSpineItem.idref, cfi.elementCfi, self);
-                }
-                else {
+                } else {
                     console.warn("Unable to find spineItem with href=" + contentDocRef);
                 }
 
-            }
-            else {
-                console.warn("Unable to find document ref from " +  fullCfi +" cfi");
+            } else {
+                console.warn("Unable to find document ref from " + fullCfi + " cfi");
             }
 
         });
@@ -127,10 +128,10 @@ var InternalLinksSupport = function(reader) {
             url: path,
             dataType: 'text',
             async: true,
-            success: function (result) {
+            success: function(result) {
                 callback(result);
             },
-            error: function (xhr, status, errorThrown) {
+            error: function(xhr, status, errorThrown) {
                 console.error('Error when AJAX fetching ' + path);
                 console.error(status);
                 console.error(errorThrown);
@@ -153,21 +154,20 @@ var InternalLinksSupport = function(reader) {
         var idref;
 
         //reference to another file
-        if(fileName) {
+        if (fileName) {
             var normalizedUri = new URI(hrefUri, spineItem.href);
-            
+
             var pathname = decodeURIComponent(normalizedUri.pathname());
-            
+
             var newSpineItem = reader.spine().getItemByHref(pathname);
 
-            if(!newSpineItem) {
+            if (!newSpineItem) {
                 console.error("spine item with href=" + pathname + " not found");
                 return;
             }
 
             idref = newSpineItem.idref;
-        }
-        else { //hush in the same file
+        } else { //hush in the same file
             idref = spineItem.idref;
         }
 
@@ -181,14 +181,13 @@ var InternalLinksSupport = function(reader) {
 
         var epubContentDocument = $iframe[0].contentDocument;
 
-        $('a', epubContentDocument).click(function (clickEvent) {
+        $('a', epubContentDocument).click(function(clickEvent) {
             // Check for both href and xlink:href attribute and get value
             var href;
             if (clickEvent.currentTarget.attributes["xlink:href"]) {
-                
+
                 href = clickEvent.currentTarget.attributes["xlink:href"].value;
-            }
-            else {
+            } else {
                 href = clickEvent.currentTarget.attributes["href"].value;
             }
 
@@ -198,11 +197,10 @@ var InternalLinksSupport = function(reader) {
 
             if (hrefIsRelative) {
 
-                if(isDeepLikHref(hrefUri)) {
+                if (isDeepLikHref(hrefUri)) {
                     processDeepLink(hrefUri, spineItem);
                     overrideClickEvent = true;
-                }
-                else {
+                } else {
                     processLinkWithHash(hrefUri, spineItem);
                     overrideClickEvent = true;
                 }
@@ -223,5 +221,4 @@ var InternalLinksSupport = function(reader) {
 
 };
 
-return InternalLinksSupport;
-});
+export default InternalLinksSupport;

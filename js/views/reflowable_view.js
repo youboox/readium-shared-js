@@ -1,8 +1,4 @@
-
-//  LauncherOSX
-//
-//  Created by Boris Schneiderman.
-//  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
+//  Copyright (c) 2018 Readium Foundation and/or its licensees. All rights reserved.
 //
 //  Redistribution and use in source and binary forms, with or without modification,
 //  are permitted provided that the following conditions are met:
@@ -26,18 +22,23 @@
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-define(["../globals", "jquery", "underscore", "eventEmitter", "../models/bookmark_data", "./cfi_navigation_logic",
-    "../models/current_pages_info", "../helpers", "../models/page_open_request",
-    "../models/viewer_settings", "ResizeSensor"],
-    function(Globals, $, _, EventEmitter, BookmarkData, CfiNavigationLogic,
-             CurrentPagesInfo, Helpers, PageOpenRequest,
-             ViewerSettings, ResizeSensor) {
+import Globals from "../globals";
+import $ from "jquery";
+import _ from "underscore";
+import EventEmitter from 'eventemitter3';
+import BookmarkData from "../models/bookmark_data";
+import CfiNavigationLogic from "./cfi_navigation_logic";
+import CurrentPagesInfo from "../models/current_pages_info";
+import Helpers from "../helpers";
+import PageOpenRequest from "../models/page_open_request";
+import ViewerSettings from "../models/viewer_settings";
+import { ResizeSensor } from "css-element-queries";
 /**
  * Renders reflowable content using CSS columns
  * @param options
  * @constructor
  */
-var ReflowableView = function(options, reader){
+var ReflowableView = function(options, reader) {
     $.extend(this, new EventEmitter());
 
     var self = this;
@@ -87,19 +88,19 @@ var ReflowableView = function(options, reader){
 
     var _paginationInfo = {
 
-        visibleColumnCount : 2,
-        columnGap : 20,
+        visibleColumnCount: 2,
+        columnGap: 20,
         columnMaxWidth: 550,
         columnMinWidth: 400,
-        spreadCount : 0,
-        currentSpreadIndex : 0,
+        spreadCount: 0,
+        currentSpreadIndex: 0,
         currentPageIndex: 0,
-        columnWidth : undefined,
-        pageOffset : 0,
+        columnWidth: undefined,
+        pageOffset: 0,
         columnCount: 0
     };
 
-    this.render = function(){
+    this.render = function() {
 
         var template = Helpers.loadTemplate("reflowable_book_frame", {});
 
@@ -107,8 +108,7 @@ var ReflowableView = function(options, reader){
         _$viewport.append(_$el);
 
         var settings = reader.viewerSettings();
-        if (!settings || typeof settings.enableGPUHardwareAccelerationCSS3D === "undefined")
-        {
+        if (!settings || typeof settings.enableGPUHardwareAccelerationCSS3D === "undefined") {
             //defaults
             settings = new ViewerSettings({});
         }
@@ -146,7 +146,7 @@ var ReflowableView = function(options, reader){
 
     this.onViewportResize = function() {
 
-        if(updateViewportSize()) {
+        if (updateViewportSize()) {
             updatePagination();
         }
     };
@@ -159,7 +159,7 @@ var ReflowableView = function(options, reader){
         _paginationInfo.columnGap = settings.columnGap;
         _paginationInfo.columnMaxWidth = settings.columnMaxWidth;
         _paginationInfo.columnMinWidth = settings.columnMinWidth;
-        
+
         _fontSize = settings.fontSize;
         _fontSelection = settings.fontSelection;
 
@@ -171,7 +171,7 @@ var ReflowableView = function(options, reader){
             updateHtmlFontInfo();
         }
     };
-    
+
     function getFrameDimensions() {
         return {
             width: _$iframe[0].clientWidth,
@@ -233,7 +233,7 @@ var ReflowableView = function(options, reader){
 
     function loadSpineItem(spineItem) {
 
-        if(_currentSpineItem != spineItem) {
+        if (_currentSpineItem != spineItem) {
 
             //create & append iframe to container frame
             renderIframe();
@@ -248,38 +248,41 @@ var ReflowableView = function(options, reader){
             _paginationInfo.currentSpreadIndex = 0;
             _paginationInfo.currentPageIndex = 0;
             _currentSpineItem = spineItem;
-            
+
             // TODO: this is a dirty hack!!
-            _currentSpineItem.paginationInfo = _paginationInfo; 
-            
+            _currentSpineItem.paginationInfo = _paginationInfo;
+
             _isWaitingFrameRender = true;
 
             var src = _spine.package.resolveRelativeUrl(spineItem.href);
-            
+
             Globals.logEvent("CONTENT_DOCUMENT_LOAD_START", "EMIT", "reflowable_view.js [ " + spineItem.href + " -- " + src + " ]");
             self.emit(Globals.Events.CONTENT_DOCUMENT_LOAD_START, _$iframe, spineItem);
 
             _$iframe.css("opacity", "0.01");
 
-            _iframeLoader.loadIframe(_$iframe[0], src, onIFrameLoad, self, {spineItem : spineItem});
+            _iframeLoader.loadIframe(_$iframe[0], src, onIFrameLoad, self, {
+                spineItem: spineItem
+            });
         }
     }
 
     function updateHtmlFontInfo() {
-    
-        if(_$epubHtml) {
+
+        if (_$epubHtml) {
             var i = _fontSelection;
-            var useDefault = !reader.fonts || !reader.fonts.length || i <= 0 || (i-1) >= reader.fonts.length;
-            var font = (useDefault ?
-                        {} :
-                        reader.fonts[i - 1]);
-            Helpers.UpdateHtmlFontAttributes(_$epubHtml, _fontSize, font, function() {self.applyStyles();});
+            var useDefault = !reader.fonts || !reader.fonts.length || i <= 0 || (i - 1) >= reader.fonts.length;
+            var font = (useDefault ? {} :
+                reader.fonts[i - 1]);
+            Helpers.UpdateHtmlFontAttributes(_$epubHtml, _fontSize, font, function() {
+                self.applyStyles();
+            });
         }
     }
 
     function updateColumnGap() {
 
-        if(_$epubHtml) {
+        if (_$epubHtml) {
 
             _$epubHtml.css("column-gap", _paginationInfo.columnGap + "px");
         }
@@ -290,12 +293,12 @@ var ReflowableView = function(options, reader){
         _isWaitingFrameRender = false;
 
         //while we where loading frame new request came
-        if(_deferredPageRequest && _deferredPageRequest.spineItem != _currentSpineItem) {
+        if (_deferredPageRequest && _deferredPageRequest.spineItem != _currentSpineItem) {
             loadSpineItem(_deferredPageRequest.spineItem);
             return;
         }
 
-        if(!success) {
+        if (!success) {
             _$iframe.css("opacity", "1");
             _deferredPageRequest = undefined;
             return;
@@ -331,48 +334,39 @@ var ReflowableView = function(options, reader){
 
         //Helpers.isIframeAlive
         var htmlBodyComputedStyle = win.getComputedStyle(_$htmlBody[0], null);
-        if (htmlBodyComputedStyle)
-        {
+        if (htmlBodyComputedStyle) {
             _htmlBodyIsLTRDirection = htmlBodyComputedStyle.direction === "ltr";
 
             var writingMode = undefined;
-            if (htmlBodyComputedStyle.getPropertyValue)
-            {
+            if (htmlBodyComputedStyle.getPropertyValue) {
                 writingMode = htmlBodyComputedStyle.getPropertyValue("-webkit-writing-mode") || htmlBodyComputedStyle.getPropertyValue("-moz-writing-mode") || htmlBodyComputedStyle.getPropertyValue("-ms-writing-mode") || htmlBodyComputedStyle.getPropertyValue("-o-writing-mode") || htmlBodyComputedStyle.getPropertyValue("-epub-writing-mode") || htmlBodyComputedStyle.getPropertyValue("writing-mode");
-            }
-            else
-            {
+            } else {
                 writingMode = htmlBodyComputedStyle.webkitWritingMode || htmlBodyComputedStyle.mozWritingMode || htmlBodyComputedStyle.msWritingMode || htmlBodyComputedStyle.oWritingMode || htmlBodyComputedStyle.epubWritingMode || htmlBodyComputedStyle.writingMode;
             }
 
-            if (writingMode)
-            {
+            if (writingMode) {
                 _htmlBodyIsLTRWritingMode = writingMode.indexOf("-lr") >= 0; // || writingMode.indexOf("horizontal-") >= 0; we need explicit!
 
-                if (writingMode.indexOf("vertical") >= 0 || writingMode.indexOf("tb-") >= 0 || writingMode.indexOf("bt-") >= 0)
-                {
+                if (writingMode.indexOf("vertical") >= 0 || writingMode.indexOf("tb-") >= 0 || writingMode.indexOf("bt-") >= 0) {
                     _htmlBodyIsVerticalWritingMode = true;
                 }
             }
         }
 
-        if (_htmlBodyIsLTRDirection)
-        {
-            if (_$htmlBody[0].getAttribute("dir") === "rtl" || _$epubHtml[0].getAttribute("dir") === "rtl")
-            {
+        if (_htmlBodyIsLTRDirection) {
+            if (_$htmlBody[0].getAttribute("dir") === "rtl" || _$epubHtml[0].getAttribute("dir") === "rtl") {
                 _htmlBodyIsLTRDirection = false;
             }
         }
 
         // Some EPUBs may not have explicit RTL content direction (via CSS "direction" property or @dir attribute) despite having a RTL page progression direction. Readium consequently tweaks the HTML in order to restore the correct block flow in the browser renderer, resulting in the appropriate CSS columnisation (which is used to emulate pagination).
-        if (!_spine.isLeftToRight() && _htmlBodyIsLTRDirection && !_htmlBodyIsVerticalWritingMode)
-        {
+        if (!_spine.isLeftToRight() && _htmlBodyIsLTRDirection && !_htmlBodyIsVerticalWritingMode) {
             _$htmlBody[0].setAttribute("dir", "rtl");
             _htmlBodyIsLTRDirection = false;
             _htmlBodyIsLTRWritingMode = false;
         }
 
-        _paginationInfo.isVerticalWritingMode = _htmlBodyIsVerticalWritingMode; 
+        _paginationInfo.isVerticalWritingMode = _htmlBodyIsVerticalWritingMode;
 
         hideBook();
         _$iframe.css("opacity", "1");
@@ -421,14 +415,14 @@ var ReflowableView = function(options, reader){
 
     this.applyBookStyles = function() {
 
-        if(_$epubHtml) { // implies _$iframe
+        if (_$epubHtml) { // implies _$iframe
             Helpers.setStyles(_bookStyles.getStyles(), _$iframe[0].contentDocument); //_$epubHtml
         }
     };
 
     function openDeferredElement() {
 
-        if(!_deferredPageRequest) {
+        if (!_deferredPageRequest) {
             return;
         }
 
@@ -440,13 +434,13 @@ var ReflowableView = function(options, reader){
 
     function _openPageInternal(pageRequest) {
 
-        if(_isWaitingFrameRender) {
+        if (_isWaitingFrameRender) {
             _deferredPageRequest = pageRequest;
             return false;
         }
 
         // if no spine item specified we are talking about current spine item
-        if(pageRequest.spineItem && pageRequest.spineItem != _currentSpineItem) {
+        if (pageRequest.spineItem && pageRequest.spineItem != _currentSpineItem) {
             _deferredPageRequest = pageRequest;
             loadSpineItem(pageRequest.spineItem);
             return true;
@@ -455,63 +449,48 @@ var ReflowableView = function(options, reader){
         var pageIndex = undefined;
 
 
-        if(pageRequest.spineItemPageIndex !== undefined) {
+        if (pageRequest.spineItemPageIndex !== undefined) {
             pageIndex = pageRequest.spineItemPageIndex;
-        }
-        else if(pageRequest.elementId) {
+        } else if (pageRequest.elementId) {
             pageIndex = _paginationInfo.currentPageIndex + _navigationLogic.getPageIndexDeltaForElementId(pageRequest.elementId);
-        }
-        else if(pageRequest.firstVisibleCfi && pageRequest.lastVisibleCfi) {
+        } else if (pageRequest.firstVisibleCfi && pageRequest.lastVisibleCfi) {
             var firstPageIndex;
             var lastPageIndex;
-            try
-            {
+            try {
                 firstPageIndex = _navigationLogic.getPageIndexDeltaForCfi(pageRequest.firstVisibleCfi,
                     _cfiClassBlacklist,
                     _cfiElementBlacklist,
                     _cfiIdBlacklist);
-            }
-            catch (e)
-            {
+            } catch (e) {
                 firstPageIndex = 0;
                 console.error(e);
             }
-            try
-            {
+            try {
                 lastPageIndex = _navigationLogic.getPageIndexDeltaForCfi(pageRequest.lastVisibleCfi,
                     _cfiClassBlacklist,
                     _cfiElementBlacklist,
                     _cfiIdBlacklist);
-            }
-            catch (e)
-            {
+            } catch (e) {
                 lastPageIndex = 0;
                 console.error(e);
             }
             // Go to the page in the middle of the two elements
             pageIndex = _paginationInfo.currentPageIndex + Math.round((firstPageIndex + lastPageIndex) / 2);
-        }
-        else if(pageRequest.elementCfi) {
-            try
-            {
+        } else if (pageRequest.elementCfi) {
+            try {
                 pageIndex = _paginationInfo.currentPageIndex + _navigationLogic.getPageIndexDeltaForCfi(pageRequest.elementCfi,
                     _cfiClassBlacklist,
                     _cfiElementBlacklist,
                     _cfiIdBlacklist);
-            }
-            catch (e)
-            {
+            } catch (e) {
                 pageIndex = 0;
                 console.error(e);
             }
-        }
-        else if(pageRequest.firstPage) {
+        } else if (pageRequest.firstPage) {
             pageIndex = 0;
-        }
-        else if(pageRequest.lastPage) {
+        } else if (pageRequest.lastPage) {
             pageIndex = _paginationInfo.columnCount - 1;
-        }
-        else {
+        } else {
             console.debug("No criteria in pageRequest");
             pageIndex = 0;
         }
@@ -522,7 +501,7 @@ var ReflowableView = function(options, reader){
         }
 
         _paginationInfo.currentPageIndex = pageIndex;
-        _paginationInfo.currentSpreadIndex = Math.floor(pageIndex / _paginationInfo.visibleColumnCount) ;
+        _paginationInfo.currentSpreadIndex = Math.floor(pageIndex / _paginationInfo.visibleColumnCount);
         onPaginationChanged(pageRequest.initiator, pageRequest.spineItem, pageRequest.elementId);
         return true;
     }
@@ -559,14 +538,11 @@ var ReflowableView = function(options, reader){
 
     function redraw() {
 
-        var offsetVal =  -_paginationInfo.pageOffset + "px";
+        var offsetVal = -_paginationInfo.pageOffset + "px";
 
-        if (_htmlBodyIsVerticalWritingMode)
-        {
+        if (_htmlBodyIsVerticalWritingMode) {
             _$epubHtml.css("top", offsetVal);
-        }
-        else
-        {
+        } else {
             var ltr = _htmlBodyIsLTRDirection || _htmlBodyIsLTRWritingMode;
 
             _$epubHtml.css("left", ltr ? offsetVal : "");
@@ -579,7 +555,7 @@ var ReflowableView = function(options, reader){
     function updateViewportSize() {
 
         var newWidth = _$contentFrame.width();
-        
+
         // Ensure that the new viewport width is always even numbered
         // this is to prevent a rendering inconsistency between browsers when odd-numbered bounds are used for CSS columns
         // See https://github.com/readium/readium-shared-js/issues/37
@@ -587,7 +563,7 @@ var ReflowableView = function(options, reader){
 
         var newHeight = _$contentFrame.height();
 
-        if(_lastViewPortSize.width !== newWidth || _lastViewPortSize.height !== newHeight){
+        if (_lastViewPortSize.width !== newWidth || _lastViewPortSize.height !== newHeight) {
 
             _lastViewPortSize.width = newWidth;
             _lastViewPortSize.height = newHeight;
@@ -618,15 +594,15 @@ var ReflowableView = function(options, reader){
     function onPaginationChanged_(initiator, paginationRequest_spineItem, paginationRequest_elementId) {
         _paginationInfo.currentPageIndex = _paginationInfo.currentSpreadIndex * _paginationInfo.visibleColumnCount;
         _paginationInfo.pageOffset = (_paginationInfo.columnWidth + _paginationInfo.columnGap) * _paginationInfo.visibleColumnCount * _paginationInfo.currentSpreadIndex;
-        
+
         redraw();
 
-        _.defer(function () {
+        _.defer(function() {
 
             if (_lastPageRequest == undefined) {
                 self.saveCurrentPosition();
             }
-            
+
             Globals.logEvent("InternalEvents.CURRENT_VIEW_PAGINATION_CHANGED", "EMIT", "reflowable_view.js");
             self.emit(Globals.InternalEvents.CURRENT_VIEW_PAGINATION_CHANGED, {
                 paginationInfo: self.getPaginationInfo(),
@@ -638,23 +614,22 @@ var ReflowableView = function(options, reader){
     }
     var onPaginationChanged = _.debounce(onPaginationChanged_, 100);
 
-    this.openPagePrev = function (initiator) {
+    this.openPagePrev = function(initiator) {
 
-        if(!_currentSpineItem) {
+        if (!_currentSpineItem) {
             return;
         }
 
-        if(_paginationInfo.currentSpreadIndex > 0) {
+        if (_paginationInfo.currentSpreadIndex > 0) {
             // Page will change, the current position is not valid any more
             // Reset it so it's saved next time onPaginationChanged is called
             this.resetCurrentPosition();
             _paginationInfo.currentSpreadIndex--;
             onPaginationChanged(initiator, _currentSpineItem);
-        }
-        else {
+        } else {
 
             var prevSpineItem = _spine.prevItem(_currentSpineItem, true);
-            if(prevSpineItem) {
+            if (prevSpineItem) {
 
                 var pageRequest = new PageOpenRequest(prevSpineItem, initiator);
                 pageRequest.setLastPage();
@@ -663,23 +638,22 @@ var ReflowableView = function(options, reader){
         }
     };
 
-    this.openPageNext = function (initiator) {
+    this.openPageNext = function(initiator) {
 
-        if(!_currentSpineItem) {
+        if (!_currentSpineItem) {
             return;
         }
 
-        if(_paginationInfo.currentSpreadIndex < _paginationInfo.spreadCount - 1) {
+        if (_paginationInfo.currentSpreadIndex < _paginationInfo.spreadCount - 1) {
             // Page will change, the current position is not valid any more
             // Reset it so it's saved next time onPaginationChanged is called
             this.resetCurrentPosition();
             _paginationInfo.currentSpreadIndex++;
             onPaginationChanged(initiator, _currentSpineItem);
-        }
-        else {
+        } else {
 
             var nextSpineItem = _spine.nextItem(_currentSpineItem, true);
-            if(nextSpineItem) {
+            if (nextSpineItem) {
 
                 var pageRequest = new PageOpenRequest(nextSpineItem, initiator);
                 pageRequest.setFirstPage();
@@ -700,27 +674,25 @@ var ReflowableView = function(options, reader){
         var forced = (isDoublePageSyntheticSpread === false) || (isDoublePageSyntheticSpread === true);
         // excludes 0 and 1 falsy/truthy values which denote non-forced result
 
-// console.debug("isDoublePageSyntheticSpread: " + isDoublePageSyntheticSpread);
-// console.debug("forced: " + forced);
-//
-        if (isDoublePageSyntheticSpread === 0)
-        {
+        // console.debug("isDoublePageSyntheticSpread: " + isDoublePageSyntheticSpread);
+        // console.debug("forced: " + forced);
+        //
+        if (isDoublePageSyntheticSpread === 0) {
             isDoublePageSyntheticSpread = 1; // try double page, will shrink if doesn't fit
-// console.debug("TRYING SPREAD INSTEAD OF SINGLE...");
+            // console.debug("TRYING SPREAD INSTEAD OF SINGLE...");
         }
 
         _paginationInfo.visibleColumnCount = isDoublePageSyntheticSpread ? 2 : 1;
 
-        if (_htmlBodyIsVerticalWritingMode)
-        {
+        if (_htmlBodyIsVerticalWritingMode) {
             MAXW *= 2;
             isDoublePageSyntheticSpread = false;
             forced = true;
             _paginationInfo.visibleColumnCount = 1;
-// console.debug("Vertical Writing Mode => single CSS column, but behaves as if two-page spread");
+            // console.debug("Vertical Writing Mode => single CSS column, but behaves as if two-page spread");
         }
 
-        if(!_$epubHtml) {
+        if (!_$epubHtml) {
             return;
         }
 
@@ -728,65 +700,64 @@ var ReflowableView = function(options, reader){
 
         // "borderLeft" is the blank vertical strip (e.g. 40px wide) where the left-arrow button resides, i.e. previous page command
         var borderLeft = parseInt(_$viewport.css("border-left-width"));
-        
+
         // The "columnGap" separates two consecutive columns in a 2-page synthetic spread (e.g. 60px wide).
         // This middle gap (blank vertical strip) actually corresponds to the left page's right-most margin, combined with the right page's left-most margin.
         // So, "adjustedGapLeft" is half of the center strip... 
-        var adjustedGapLeft = _paginationInfo.columnGap/2;
+        var adjustedGapLeft = _paginationInfo.columnGap / 2;
         // ...but we include the "borderLeft" strip to avoid wasting valuable rendering real-estate:  
-        adjustedGapLeft = Math.max(0, adjustedGapLeft-borderLeft);
+        adjustedGapLeft = Math.max(0, adjustedGapLeft - borderLeft);
         // Typically, "adjustedGapLeft" is zero because the space available for the 'previous page' button is wider than half of the column gap!
 
         // "borderRight" is the blank vertical strip (e.g. 40px wide) where the right-arrow button resides, i.e. next page command
         var borderRight = parseInt(_$viewport.css("border-right-width"));
-        
+
         // The "columnGap" separates two consecutive columns in a 2-page synthetic spread (e.g. 60px wide).
         // This middle gap (blank vertical strip) actually corresponds to the left page's right-most margin, combined with the right page's left-most margin.
         // So, "adjustedGapRight" is half of the center strip... 
-        var adjustedGapRight = _paginationInfo.columnGap/2;
+        var adjustedGapRight = _paginationInfo.columnGap / 2;
         // ...but we include the "borderRight" strip to avoid wasting valuable rendering real-estate:
-        adjustedGapRight = Math.max(0, adjustedGapRight-borderRight);
+        adjustedGapRight = Math.max(0, adjustedGapRight - borderRight);
         // Typically, "adjustedGapRight" is zero because the space available for the 'next page' button is wider than half of the column gap! (in other words, the right-most and left-most page margins are fully included in the strips reserved for the arrow buttons)
 
         // Note that "availableWidth" does not contain "borderLeft" and "borderRight" (.width() excludes the padding and border and margin in the CSS box model of div#epub-reader-frame)  
         var availableWidth = _$viewport.width();
-        
+
         // ...So, we substract the page margins and button spacing to obtain the width available for actual text:
         var textWidth = availableWidth - adjustedGapLeft - adjustedGapRight;
-        
+
         // ...and if we have 2 pages / columns, then we split the text width in half: 
-        if (isDoublePageSyntheticSpread)
-        {
+        if (isDoublePageSyntheticSpread) {
             textWidth = (textWidth - _paginationInfo.columnGap) * 0.5;
         }
 
         var filler = 0;
 
         // Now, if the resulting width actually available for document content is greater than the maximum allowed value, we create even more left+right blank space to "compress" the horizontal run of text.  
-        if (textWidth > MAXW)
-        {
+        if (textWidth > MAXW) {
             var eachPageColumnReduction = textWidth - MAXW;
-            
+
             // if we have a 2-page synthetic spread, then we "trim" left and right sides by adding "eachPageColumnReduction" blank space.
             // if we have a single page / column, then this loss of text real estate is shared between right and left sides  
             filler = Math.floor(eachPageColumnReduction * (isDoublePageSyntheticSpread ? 1 : 0.5));
         }
 
         // Let's check whether a narrow two-page synthetic spread (impeded reabability) can be reduced down to a single page / column:
-        else if (!forced && textWidth < MINW && isDoublePageSyntheticSpread)
-        {
+        else if (!forced && textWidth < MINW && isDoublePageSyntheticSpread) {
             isDoublePageSyntheticSpread = false;
             _paginationInfo.visibleColumnCount = 1;
 
             textWidth = availableWidth - adjustedGapLeft - adjustedGapRight;
-            if (textWidth > MAXW)
-            {
+            if (textWidth > MAXW) {
                 filler = Math.floor((textWidth - MAXW) * 0.5);
             }
         }
-        
-        _$el.css({"left": (filler+adjustedGapLeft + "px"), "right": (filler+adjustedGapRight + "px")});
-        
+
+        _$el.css({
+            "left": (filler + adjustedGapLeft + "px"),
+            "right": (filler + adjustedGapRight + "px")
+        });
+
         updateViewportSize(); //_$contentFrame ==> _lastViewPortSize
 
         var resultingColumnWidth = _$el.width();
@@ -794,10 +765,10 @@ var ReflowableView = function(options, reader){
             resultingColumnWidth = (resultingColumnWidth - _paginationInfo.columnGap) / 2;
         }
         resultingColumnWidth = Math.floor(resultingColumnWidth);
-        if ((resultingColumnWidth-1) > MAXW) {
+        if ((resultingColumnWidth - 1) > MAXW) {
             console.debug("resultingColumnWidth > MAXW ! " + resultingColumnWidth + " > " + MAXW);
         }
-        
+
 
         _$iframe.css("width", _lastViewPortSize.width + "px");
         _$iframe.css("height", _lastViewPortSize.height + "px");
@@ -837,7 +808,11 @@ var ReflowableView = function(options, reader){
 
         _$epubHtml.css("column-fill", "auto");
 
-        _$epubHtml.css({left: "0", right: "0", top: "0"});
+        _$epubHtml.css({
+            left: "0",
+            right: "0",
+            top: "0"
+        });
 
         Helpers.triggerLayout(_$iframe);
 
@@ -852,12 +827,11 @@ var ReflowableView = function(options, reader){
             console.error("Column count zero?!");
         }
 
-        var totalGaps = (_paginationInfo.columnCount-1) * _paginationInfo.columnGap;
+        var totalGaps = (_paginationInfo.columnCount - 1) * _paginationInfo.columnGap;
         var colWidthCheck = (dim - totalGaps) / _paginationInfo.columnCount;
         colWidthCheck = Math.round(colWidthCheck);
 
-        if (colWidthCheck > _paginationInfo.columnWidth)
-        {
+        if (colWidthCheck > _paginationInfo.columnWidth) {
             console.debug("ADJUST COLUMN");
             console.log(_paginationInfo.columnWidth);
             console.log(colWidthCheck);
@@ -865,18 +839,17 @@ var ReflowableView = function(options, reader){
             _paginationInfo.columnWidth = colWidthCheck;
         }
 
-        _paginationInfo.spreadCount =  Math.ceil(_paginationInfo.columnCount / _paginationInfo.visibleColumnCount);
+        _paginationInfo.spreadCount = Math.ceil(_paginationInfo.columnCount / _paginationInfo.visibleColumnCount);
 
-        if(_paginationInfo.currentSpreadIndex >= _paginationInfo.spreadCount) {
+        if (_paginationInfo.currentSpreadIndex >= _paginationInfo.spreadCount) {
             _paginationInfo.currentSpreadIndex = _paginationInfo.spreadCount - 1;
         }
 
-        if(_deferredPageRequest) {
+        if (_deferredPageRequest) {
 
             //if there is a request for specific page we get here
             openDeferredElement();
-        }
-        else {
+        } else {
 
             // we get here on resizing the viewport
             if (_lastPageRequest) {
@@ -906,7 +879,7 @@ var ReflowableView = function(options, reader){
         if (_expandDocumentFullWidth) {
             _$iframe.width(_lastDocumentSize.width);
         }
-        
+
         // Only initializes the resize sensor once the content has been paginated once,
         // to avoid the pagination process to trigger a resize event during its first
         // execution, provoking a flicker
@@ -923,7 +896,7 @@ var ReflowableView = function(options, reader){
             var documentSizeChanged = updateDocumentSize();
 
             console.debug("ReflowableView content resized ...", _lastDocumentSize.width, _lastDocumentSize.height, _currentSpineItem.idref);
-            
+
             if (documentSizeChanged) {
                 console.debug("... updating pagination.");
 
@@ -933,19 +906,18 @@ var ReflowableView = function(options, reader){
             }
         });
     }
-    
-//    function shiftBookOfScreen() {
-//
-//        if(_spine.isLeftToRight()) {
-//            _$epubHtml.css("left", (_lastViewPortSize.width + 1000) + "px");
-//        }
-//        else {
-//            _$epubHtml.css("right", (_lastViewPortSize.width + 1000) + "px");
-//        }
-//    }
 
-    function hideBook()
-    {
+    //    function shiftBookOfScreen() {
+    //
+    //        if(_spine.isLeftToRight()) {
+    //            _$epubHtml.css("left", (_lastViewPortSize.width + 1000) + "px");
+    //        }
+    //        else {
+    //            _$epubHtml.css("right", (_lastViewPortSize.width + 1000) + "px");
+    //        }
+    //    }
+
+    function hideBook() {
         if (_currentOpacity != -1) return; // already hidden
 
         // css('opacity') produces invalid result in Firefox, when iframes are involved and when is called
@@ -955,10 +927,8 @@ var ReflowableView = function(options, reader){
         _$epubHtml.css('opacity', "0");
     }
 
-    function showBook()
-    {
-        if (_currentOpacity != -1)
-        {
+    function showBook() {
+        if (_currentOpacity != -1) {
             _$epubHtml.css('opacity', _currentOpacity);
         }
         _currentOpacity = -1;
@@ -968,13 +938,13 @@ var ReflowableView = function(options, reader){
 
         var paginationInfo = new CurrentPagesInfo(_spine, false);
 
-        if(!_currentSpineItem) {
+        if (!_currentSpineItem) {
             return paginationInfo;
         }
 
         var pageIndexes = getOpenPageIndexes();
 
-        for(var i = 0, count = pageIndexes.length; i < count; i++) {
+        for (var i = 0, count = pageIndexes.length; i < count; i++) {
 
             paginationInfo.addOpenPage(pageIndexes[i], _paginationInfo.columnCount, _currentSpineItem.idref, _currentSpineItem.index);
         }
@@ -989,7 +959,7 @@ var ReflowableView = function(options, reader){
 
         var currentPage = _paginationInfo.currentSpreadIndex * _paginationInfo.visibleColumnCount;
 
-        for(var i = 0; i < _paginationInfo.visibleColumnCount && (currentPage + i) < _paginationInfo.columnCount; i++) {
+        for (var i = 0; i < _paginationInfo.visibleColumnCount && (currentPage + i) < _paginationInfo.columnCount; i++) {
 
             indexes.push(currentPage + i);
         }
@@ -1001,7 +971,7 @@ var ReflowableView = function(options, reader){
     //we need this styles for css columnizer not to chop big images
     function resizeImages() {
 
-        if(!_$epubHtml) {
+        if (!_$epubHtml) {
             return;
         }
 
@@ -1009,7 +979,7 @@ var ReflowableView = function(options, reader){
         var height;
         var width;
 
-        $('img, svg', _$epubHtml).each(function(){
+        $('img, svg', _$epubHtml).each(function() {
 
             $elem = $(this);
 
@@ -1019,11 +989,11 @@ var ReflowableView = function(options, reader){
             $elem.css('max-width', '98%');
             $elem.css('max-height', '98%');
 
-            if(!$elem.css('height')) {
+            if (!$elem.css('height')) {
                 $elem.css('height', 'auto');
             }
 
-            if(!$elem.css('width')) {
+            if (!$elem.css('width')) {
                 $elem.css('width', 'auto');
             }
 
@@ -1032,7 +1002,7 @@ var ReflowableView = function(options, reader){
 
     this.bookmarkCurrentPage = function() {
 
-        if(!_currentSpineItem) {
+        if (!_currentSpineItem) {
 
             return undefined;
         }
@@ -1050,7 +1020,7 @@ var ReflowableView = function(options, reader){
 
     this.getElementByCfi = function(spineItemIdref, cfi, classBlacklist, elementBlacklist, idBlacklist) {
 
-        if(spineItemIdref != _currentSpineItem.idref) {
+        if (spineItemIdref != _currentSpineItem.idref) {
             console.warn("spine item is not loaded");
             return undefined;
         }
@@ -1060,7 +1030,7 @@ var ReflowableView = function(options, reader){
 
     this.getElementById = function(spineItemIdref, id) {
 
-        if(spineItemIdref != _currentSpineItem.idref) {
+        if (spineItemIdref != _currentSpineItem.idref) {
             console.error("spine item is not loaded");
             return undefined;
         }
@@ -1070,7 +1040,7 @@ var ReflowableView = function(options, reader){
 
     this.getElement = function(spineItemIdref, selector) {
 
-        if(spineItemIdref != _currentSpineItem.idref) {
+        if (spineItemIdref != _currentSpineItem.idref) {
             console.warn("spine item is not loaded");
             return undefined;
         }
@@ -1086,15 +1056,13 @@ var ReflowableView = function(options, reader){
     this.insureElementVisibility = function(spineItemId, element, initiator) {
 
         var $element = $(element);
-        if(_navigationLogic.isElementVisible($element))
-        {
+        if (_navigationLogic.isElementVisible($element)) {
             return;
         }
 
         var elementCfi = _navigationLogic.getCfiForElement(element);
 
-        if (!elementCfi)
-        {
+        if (!elementCfi) {
             return;
         }
 
@@ -1102,13 +1070,11 @@ var ReflowableView = function(options, reader){
         openPageRequest.setElementCfi(elementCfi);
 
         var id = element.id;
-        if (!id)
-        {
+        if (!id) {
             id = element.getAttribute("id");
         }
 
-        if (id)
-        {
+        if (id) {
             openPageRequest.setElementId(id);
         }
 
@@ -1120,7 +1086,10 @@ var ReflowableView = function(options, reader){
         var elements = _navigationLogic.getVisibleElementsWithFilter(null, filterFunction);
 
         if (includeSpineItem) {
-            return [{elements: elements, spineItem:_currentSpineItem}];
+            return [{
+                elements: elements,
+                spineItem: _currentSpineItem
+            }];
         } else {
             return elements;
         }
@@ -1132,14 +1101,17 @@ var ReflowableView = function(options, reader){
         var elements = _navigationLogic.getAllVisibleElementsWithSelector(selector);
 
         if (includeSpineItem) {
-            return [{elements: elements, spineItem:_currentSpineItem}];
+            return [{
+                elements: elements,
+                spineItem: _currentSpineItem
+            }];
         } else {
             return elements;
         }
 
     };
 
-    this.isElementVisible = function ($element) {
+    this.isElementVisible = function($element) {
 
         return _navigationLogic.isElementVisible($element);
 
@@ -1147,7 +1119,7 @@ var ReflowableView = function(options, reader){
 
     this.getElements = function(spineItemIdref, selector) {
 
-        if(spineItemIdref != _currentSpineItem.idref) {
+        if (spineItemIdref != _currentSpineItem.idref) {
             console.warn("spine item is not loaded");
             return undefined;
         }
@@ -1155,14 +1127,14 @@ var ReflowableView = function(options, reader){
         return _navigationLogic.getElements(selector);
     };
 
-    this.isNodeFromRangeCfiVisible = function (spineIdref, partialCfi) {
+    this.isNodeFromRangeCfiVisible = function(spineIdref, partialCfi) {
         if (_currentSpineItem.idref === spineIdref) {
             return _navigationLogic.isNodeFromRangeCfiVisible(partialCfi);
         }
         return undefined;
     };
 
-    this.isVisibleSpineItemElementCfi = function (spineIdRef, partialCfi) {
+    this.isVisibleSpineItemElementCfi = function(spineIdRef, partialCfi) {
         if (_navigationLogic.isRangeCfi(partialCfi)) {
             return this.isNodeFromRangeCfiVisible(spineIdRef, partialCfi);
         }
@@ -1170,7 +1142,7 @@ var ReflowableView = function(options, reader){
         return ($elementFromCfi && this.isElementVisible($elementFromCfi));
     };
 
-    this.getNodeRangeInfoFromCfi = function (spineIdRef, partialCfi) {
+    this.getNodeRangeInfoFromCfi = function(spineIdRef, partialCfi) {
         if (spineIdRef != _currentSpineItem.idref) {
             console.warn("spine item is not loaded");
             return undefined;
@@ -1179,39 +1151,39 @@ var ReflowableView = function(options, reader){
         return _navigationLogic.getNodeRangeInfoFromCfi(partialCfi);
     };
 
-    function createBookmarkFromCfi(cfi){
+    function createBookmarkFromCfi(cfi) {
         return new BookmarkData(_currentSpineItem.idref, cfi);
     }
 
-    this.getFirstVisibleCfi = function () {
+    this.getFirstVisibleCfi = function() {
         return createBookmarkFromCfi(_navigationLogic.getFirstVisibleCfi());
     };
 
-    this.getLastVisibleCfi = function () {
+    this.getLastVisibleCfi = function() {
         return createBookmarkFromCfi(_navigationLogic.getLastVisibleCfi());
     };
 
-    this.getStartCfi = function () {
+    this.getStartCfi = function() {
         return createBookmarkFromCfi(_navigationLogic.getStartCfi());
     };
 
-    this.getEndCfi = function () {
+    this.getEndCfi = function() {
         return createBookmarkFromCfi(_navigationLogic.getEndCfi());
     };
 
-    this.getDomRangeFromRangeCfi = function (rangeCfi, rangeCfi2, inclusive) {
+    this.getDomRangeFromRangeCfi = function(rangeCfi, rangeCfi2, inclusive) {
         if (rangeCfi2 && rangeCfi.idref !== rangeCfi2.idref) {
             console.error("getDomRangeFromRangeCfi: both CFIs must be scoped under the same spineitem idref");
             return undefined;
         }
-        return _navigationLogic.getDomRangeFromRangeCfi(rangeCfi.contentCFI, rangeCfi2? rangeCfi2.contentCFI: null, inclusive);
+        return _navigationLogic.getDomRangeFromRangeCfi(rangeCfi.contentCFI, rangeCfi2 ? rangeCfi2.contentCFI : null, inclusive);
     };
 
-    this.getRangeCfiFromDomRange = function (domRange) {
+    this.getRangeCfiFromDomRange = function(domRange) {
         return createBookmarkFromCfi(_navigationLogic.getRangeCfiFromDomRange(domRange));
     };
 
-    this.getVisibleCfiFromPoint = function (x, y, precisePoint) {
+    this.getVisibleCfiFromPoint = function(x, y, precisePoint) {
         return createBookmarkFromCfi(_navigationLogic.getVisibleCfiFromPoint(x, y, precisePoint));
     };
 
@@ -1224,7 +1196,7 @@ var ReflowableView = function(options, reader){
     };
 
     this.getElementFromPoint = function(x, y) {
-        return _navigationLogic.getElementFromPoint(x,y);
+        return _navigationLogic.getElementFromPoint(x, y);
     };
 
     this.getNearestCfiFromElement = function(element) {
@@ -1238,5 +1210,4 @@ var ReflowableView = function(options, reader){
             _cfiIdBlacklist);
     }
 };
-    return ReflowableView;
-});
+export default ReflowableView;

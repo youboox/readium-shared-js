@@ -1,5 +1,4 @@
-    //  Created by Boris Schneiderman.
-//  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
+//  Copyright (c) 2018 Readium Foundation and/or its licensees. All rights reserved.
 //  
 //  Redistribution and use in source and binary forms, with or without modification, 
 //  are permitted provided that the following conditions are met:
@@ -23,7 +22,7 @@
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-define(["./style"], function(Style) {
+import Style from "./style";
 
 /**
  *
@@ -58,8 +57,8 @@ var StyleCollection = function() {
     this.findStyle = function(selector) {
 
         var count = _styles.length;
-        for(var i = 0; i < count; i++) {
-            if(_styles[i].selector === selector) {
+        for (var i = 0; i < count; i++) {
+            if (_styles[i].selector === selector) {
                 return _styles[i];
             }
         }
@@ -80,10 +79,9 @@ var StyleCollection = function() {
 
         var style = this.findStyle(selector);
 
-        if(style) {
+        if (style) {
             style.setDeclarations(declarations);
-        }
-        else {
+        } else {
             style = new Style(selector, declarations);
             _styles.push(style);
         }
@@ -99,12 +97,12 @@ var StyleCollection = function() {
      */
 
     this.removeStyle = function(selector) {
-        
+
         var count = _styles.length;
 
-        for(var i = 0; i < count; i++) {
+        for (var i = 0; i < count; i++) {
 
-            if(_styles[i].selector === selector) {
+            if (_styles[i].selector === selector) {
                 _styles.splice(i, 1);
                 return;
             }
@@ -132,13 +130,13 @@ var StyleCollection = function() {
 
         var count = _styles.length;
 
-        for(var i = 0; i < count; i++) {
+        for (var i = 0; i < count; i++) {
 
             var style = _styles[i];
             var declarations = style.declarations;
 
-            for(var prop in declarations) {
-                if(declarations.hasOwnProperty(prop)) {
+            for (var prop in declarations) {
+                if (declarations.hasOwnProperty(prop)) {
                     declarations[prop] = '';
                 }
             }
@@ -146,5 +144,4 @@ var StyleCollection = function() {
     }
 
 };
-    return StyleCollection;
-});
+export default StyleCollection;

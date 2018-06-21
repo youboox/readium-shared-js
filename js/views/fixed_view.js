@@ -1,5 +1,4 @@
-//  Created by Boris Schneiderman.
-//  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
+//  Copyright (c) 2018 Readium Foundation and/or its licensees. All rights reserved.
 //  
 //  Redistribution and use in source and binary forms, with or without modification, 
 //  are permitted provided that the following conditions are met:
@@ -23,17 +22,23 @@
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-define (["../globals", "jquery", "underscore", "eventEmitter", "../models/bookmark_data", "../models/current_pages_info",
-    "../models/fixed_page_spread", "./one_page_view", "../models/page_open_request", "../helpers"],
-    function(Globals, $, _, EventEmitter, BookmarkData, CurrentPagesInfo,
-             Spread, OnePageView, PageOpenRequest, Helpers) {
+import Globals from "../globals";
+import $ from "jquery";
+import _ from "underscore";
+import EventEmitter from 'eventemitter3';
+import BookmarkData from "../models/bookmark_data";
+import CurrentPagesInfo from "../models/current_pages_info";
+import Spread from "../models/fixed_page_spread";
+import OnePageView from "./one_page_view";
+import PageOpenRequest from "../models/page_open_request";
+import Helpers from "../helpers";
 /**
  * View for rendering fixed layout page spread
  * @param options
  * @param reader
  * @constructor
  */
-var FixedView = function(options, reader){
+var FixedView = function(options, reader) {
 
     $.extend(this, new EventEmitter());
 
@@ -44,7 +49,9 @@ var FixedView = function(options, reader){
     var _spine = options.spine;
     var _userStyles = options.userStyles;
     var _bookStyles = options.bookStyles;
-    var _zoom = options.zoom || {style: 'default'};
+    var _zoom = options.zoom || {
+        style: 'default'
+    };
     var _currentScale;
     var _iframeLoader = options.iframeLoader;
     var _viewSettings = undefined;
@@ -66,15 +73,14 @@ var FixedView = function(options, reader){
 
     function createOnePageView(elementClass) {
 
-        var pageView = new OnePageView(options,
-        [elementClass],
-        false, //enableBookStyleOverrides
-        reader
+        var pageView = new OnePageView(options, [elementClass],
+            false, //enableBookStyleOverrides
+            reader
         );
 
 
         pageView.on(OnePageView.Events.SPINE_ITEM_OPEN_START, function($iframe, spineItem) {
-            
+
             Globals.logEvent("OnePageView.Events.SPINE_ITEM_OPEN_START", "ON", "fixed_view.js [ " + spineItem.href + " ]");
 
             Globals.logEvent("CONTENT_DOCUMENT_LOAD_START", "EMIT", "fixed_view.js [ " + spineItem.href + " ]");
@@ -96,22 +102,22 @@ var FixedView = function(options, reader){
         return false;
     };
 
-    this.setZoom = function(zoom){
+    this.setZoom = function(zoom) {
         _zoom = zoom;
 
-        resizeBook(false); 
+        resizeBook(false);
     }
 
-    this.render = function(){
+    this.render = function() {
 
         var template = Helpers.loadTemplate("fixed_book_frame", {});
 
         _$el = $(template);
 
         Helpers.CSSTransition(_$el, "all 0 ease 0");
-        
+
         _$el.css("overflow", "hidden");
-        
+
         // Removed, see one_page_view@render()
         // var settings = reader.viewerSettings();
         // if (!settings || typeof settings.enableGPUHardwareAccelerationCSS3D === "undefined")
@@ -124,7 +130,7 @@ var FixedView = function(options, reader){
         //     // This fixes rendering issues with WebView (native apps), which crops content embedded in iframes unless GPU hardware acceleration is enabled for CSS rendering.
         //     _$el.css("transform", "translateZ(0)");
         // }
-        
+
         _$viewport.append(_$el);
 
         self.applyStyles();
@@ -139,13 +145,13 @@ var FixedView = function(options, reader){
 
 
     this.setViewSettings = function(settings, docWillChange) {
-        
+
         _viewSettings = settings;
-        
+
         _spread.setSyntheticSpread(Helpers.deduceSyntheticSpread(_$viewport, getFirstVisibleItem(), _viewSettings) == true); // force boolean value (from truthy/falsey return value)
 
         var views = getDisplayingViews();
-        for(var i = 0, count = views.length; i < count; i++) {
+        for (var i = 0, count = views.length; i < count; i++) {
             views[i].setViewSettings(settings, docWillChange);
         }
     };
@@ -158,45 +164,55 @@ var FixedView = function(options, reader){
 
     function redraw(initiator, paginationRequest) {
 
-        if(_isRedrowing) {
-            _redrawRequest = {initiator: initiator, paginationRequest: paginationRequest};
+        if (_isRedrowing) {
+            _redrawRequest = {
+                initiator: initiator,
+                paginationRequest: paginationRequest
+            };
             return;
         }
 
         _isRedrowing = true;
 
-        var context = {isElementAdded : false};
+        var context = {
+            isElementAdded: false
+        };
 
-        var pageLoadDeferrals = createPageLoadDeferrals([
-            {pageView: _leftPageView, spineItem: _spread.leftItem, context: context},
-            {pageView: _rightPageView, spineItem: _spread.rightItem, context: context},
-            {pageView: _centerPageView, spineItem: _spread.centerItem, context: context}]);
+        var pageLoadDeferrals = createPageLoadDeferrals([{
+            pageView: _leftPageView,
+            spineItem: _spread.leftItem,
+            context: context
+        }, {
+            pageView: _rightPageView,
+            spineItem: _spread.rightItem,
+            context: context
+        }, {
+            pageView: _centerPageView,
+            spineItem: _spread.centerItem,
+            context: context
+        }]);
 
-        $.when.apply($, pageLoadDeferrals).done(function(){
+        $.when.apply($, pageLoadDeferrals).done(function() {
             _isRedrowing = false;
 
-            if(_redrawRequest) {
+            if (_redrawRequest) {
                 var p1 = _redrawRequest.initiator;
                 var p2 = _redrawRequest.paginationRequest;
                 _redrawRequest = undefined;
                 redraw(p1, p2);
-            }
-            else {
-                
-                if(context.isElementAdded) {
+            } else {
+
+                if (context.isElementAdded) {
                     //self.applyStyles();
-                    
+
                     Helpers.setStyles(_userStyles.getStyles(), _$el.parent());
                     updateBookMargins();
                     // updateContentMetaSize() and resizeBook() are invoked in onPagesLoaded below
                 }
 
-                if (paginationRequest)
-                {
+                if (paginationRequest) {
                     onPagesLoaded(initiator, paginationRequest.spineItem, paginationRequest.elementId)
-                }
-                else
-                {
+                } else {
                     onPagesLoaded(initiator);
                 }
             }
@@ -206,8 +222,7 @@ var FixedView = function(options, reader){
     }
 
     // dir: 0 => new or same page, 1 => previous, 2 => next
-    var updatePageSwitchDir = function(dir, hasChanged)
-    {
+    var updatePageSwitchDir = function(dir, hasChanged) {
         // irrespective of display state
         if (_leftPageView) _leftPageView.updatePageSwitchDir(dir, hasChanged);
         if (_rightPageView) _rightPageView.updatePageSwitchDir(dir, hasChanged);
@@ -218,13 +233,13 @@ var FixedView = function(options, reader){
         //     views[i].updatePageSwitchDir(dir, hasChanged);
         // }
     };
-    
+
 
     this.applyStyles = function() {
 
         Helpers.setStyles(_userStyles.getStyles(), _$el.parent());
         updateBookMargins();
-        
+
         updateContentMetaSize();
         resizeBook();
     };
@@ -233,7 +248,7 @@ var FixedView = function(options, reader){
 
         var views = getDisplayingViews();
 
-        for(var i = 0, count = views.length; i < count; i++) {
+        for (var i = 0, count = views.length; i < count; i++) {
             views[i].applyBookStyles();
         }
     };
@@ -242,7 +257,7 @@ var FixedView = function(options, reader){
 
         var pageLoadDeferrals = [];
 
-        for(var i = 0; i < viewItemPairs.length; i++) {
+        for (var i = 0; i < viewItemPairs.length; i++) {
 
             var dfd = updatePageViewForItem(viewItemPairs[i].pageView, viewItemPairs[i].spineItem, viewItemPairs[i].context);
             pageLoadDeferrals.push(dfd);
@@ -253,12 +268,12 @@ var FixedView = function(options, reader){
     }
 
     function onPagesLoaded(initiator, paginationRequest_spineItem, paginationRequest_elementId) {
-        
+
         updateContentMetaSize();
         resizeBook();
-        
-        window.setTimeout(function () {
-            
+
+        window.setTimeout(function() {
+
             Globals.logEvent("InternalEvents.CURRENT_VIEW_PAGINATION_CHANGED", "EMIT", "fixed_view.js");
             self.emit(Globals.InternalEvents.CURRENT_VIEW_PAGINATION_CHANGED, {
                 paginationInfo: self.getPaginationInfo(),
@@ -277,18 +292,17 @@ var FixedView = function(options, reader){
         //visible content stays same
 
         var firstVisibleItem = getFirstVisibleItem();
-        if(!firstVisibleItem) {
+        if (!firstVisibleItem) {
             return;
         }
 
         var isSyntheticSpread = Helpers.deduceSyntheticSpread(_$viewport, firstVisibleItem, _viewSettings) == true; // force boolean value (from truthy/falsey return value)
 
-        if(isSpreadChanged(firstVisibleItem, isSyntheticSpread)) {
+        if (isSpreadChanged(firstVisibleItem, isSyntheticSpread)) {
             _spread.setSyntheticSpread(isSyntheticSpread);
             var paginationRequest = new PageOpenRequest(firstVisibleItem, self);
             self.openPage(paginationRequest);
-        }
-        else {
+        } else {
             resizeBook(true);
         }
     };
@@ -301,13 +315,13 @@ var FixedView = function(options, reader){
         return _spread.leftItem != tmpSpread.leftItem || _spread.rightItem != tmpSpread.rightItem || _spread.centerItem != tmpSpread.centerItem;
     }
 
-    this.getViewScale = function(){
+    this.getViewScale = function() {
         return _currentScale;
     };
 
     function isContentRendered() {
 
-        if(!_contentMetaSize || !_bookMargins) {
+        if (!_contentMetaSize || !_bookMargins) {
             return false;
         }
 
@@ -320,8 +334,8 @@ var FixedView = function(options, reader){
     function resizeBook(viewportIsResizing) {
 
         updatePageSwitchDir(0, false);
-        
-        if(!isContentRendered()) {
+
+        if (!isContentRendered()) {
             return;
         }
 
@@ -334,32 +348,33 @@ var FixedView = function(options, reader){
 
         var pageMargins = getMaxPageMargins(leftPageMargins, rightPageMargins, centerPageMargins);
 
-        var potentialTargetElementSize = {   width: viewportWidth - _bookMargins.width(),
-                                             height: viewportHeight - _bookMargins.height()};
+        var potentialTargetElementSize = {
+            width: viewportWidth - _bookMargins.width(),
+            height: viewportHeight - _bookMargins.height()
+        };
 
-        var potentialContentSize = {    width: potentialTargetElementSize.width - pageMargins.width(),
-                                        height: potentialTargetElementSize.height - pageMargins.height() };
+        var potentialContentSize = {
+            width: potentialTargetElementSize.width - pageMargins.width(),
+            height: potentialTargetElementSize.height - pageMargins.height()
+        };
 
-        if(potentialTargetElementSize.width <= 0 || potentialTargetElementSize.height <= 0) {
+        if (potentialTargetElementSize.width <= 0 || potentialTargetElementSize.height <= 0) {
             return;
         }
 
         var horScale = potentialContentSize.width / _contentMetaSize.width;
         var verScale = potentialContentSize.height / _contentMetaSize.height;
-        
+
         _$viewport.css("overflow", "auto");
-            
+
         var scale;
-        if (_zoom.style == 'fit-width'){
+        if (_zoom.style == 'fit-width') {
             scale = horScale;
-        }
-        else if (_zoom.style == 'fit-height'){
+        } else if (_zoom.style == 'fit-height') {
             scale = verScale;
-        }
-        else if (_zoom.style == 'user'){
+        } else if (_zoom.style == 'user') {
             scale = _zoom.scale;
-        }
-        else{
+        } else {
             scale = Math.min(horScale, verScale);
 
             // no need for pan during "viewport fit" zoom
@@ -368,22 +383,28 @@ var FixedView = function(options, reader){
 
         _currentScale = scale;
 
-        var contentSize = { width: _contentMetaSize.width * scale,
-                            height: _contentMetaSize.height * scale };
+        var contentSize = {
+            width: _contentMetaSize.width * scale,
+            height: _contentMetaSize.height * scale
+        };
 
-        var targetElementSize = {   width: contentSize.width + pageMargins.width(),
-                                    height: contentSize.height + pageMargins.height() };
+        var targetElementSize = {
+            width: contentSize.width + pageMargins.width(),
+            height: contentSize.height + pageMargins.height()
+        };
 
-        var bookSize = {    width: targetElementSize.width + _bookMargins.width(),
-                            height: targetElementSize.height + _bookMargins.height() };
+        var bookSize = {
+            width: targetElementSize.width + _bookMargins.width(),
+            height: targetElementSize.height + _bookMargins.height()
+        };
 
 
         var bookLeft = Math.floor((viewportWidth - bookSize.width) / 2);
         var bookTop = Math.floor((viewportHeight - bookSize.height) / 2);
 
-        if(bookLeft < 0) bookLeft = 0;
-        if(bookTop < 0) bookTop = 0;
-        
+        if (bookLeft < 0) bookLeft = 0;
+        if (bookTop < 0) bookTop = 0;
+
         _$el.css("left", bookLeft + "px");
         _$el.css("top", bookTop + "px");
         _$el.css("width", targetElementSize.width + "px");
@@ -394,34 +415,34 @@ var FixedView = function(options, reader){
 
         var transFunc = viewportIsResizing ? "transformContentImmediate" : "transformContent";
 
-        if(_leftPageView.isDisplaying()) {
+        if (_leftPageView.isDisplaying()) {
 
-             _leftPageView[transFunc](scale, left, top);
+            _leftPageView[transFunc](scale, left, top);
         }
 
-        if(_rightPageView.isDisplaying()) {
+        if (_rightPageView.isDisplaying()) {
 
             left += _contentMetaSize.separatorPosition * scale;
 
-            if(_leftPageView.isDisplaying()) {
+            if (_leftPageView.isDisplaying()) {
                 left += leftPageMargins.left;
             }
 
             _rightPageView[transFunc](scale, left, top);
         }
 
-        if(_centerPageView.isDisplaying()) {
+        if (_centerPageView.isDisplaying()) {
 
             _centerPageView[transFunc](scale, left, top);
         }
-        
+
         Globals.logEvent("FXL_VIEW_RESIZED", "EMIT", "fixed_view.js");
         self.emit(Globals.Events.FXL_VIEW_RESIZED);
     }
 
     function getMaxPageMargins(leftPageMargins, rightPageMargins, centerPageMargins) {
 
-         var sumMargin = {
+        var sumMargin = {
             left: Math.max(leftPageMargins.margin.left, rightPageMargins.margin.left, centerPageMargins.margin.left),
             right: Math.max(leftPageMargins.margin.right, rightPageMargins.margin.right, centerPageMargins.margin.right),
             top: Math.max(leftPageMargins.margin.top, rightPageMargins.margin.top, centerPageMargins.margin.top),
@@ -450,35 +471,30 @@ var FixedView = function(options, reader){
 
         _contentMetaSize = {};
 
-        if(_centerPageView.isDisplaying()) {
+        if (_centerPageView.isDisplaying()) {
             _contentMetaSize.width = _centerPageView.meta_width();
             _contentMetaSize.height = _centerPageView.meta_height();
             _contentMetaSize.separatorPosition = 0;
-        }
-        else if(_leftPageView.isDisplaying() && _rightPageView.isDisplaying()) {
-            if(_leftPageView.meta_height() == _rightPageView.meta_height()) {
+        } else if (_leftPageView.isDisplaying() && _rightPageView.isDisplaying()) {
+            if (_leftPageView.meta_height() == _rightPageView.meta_height()) {
                 _contentMetaSize.width = _leftPageView.meta_width() + _rightPageView.meta_width();
                 _contentMetaSize.height = _leftPageView.meta_height();
                 _contentMetaSize.separatorPosition = _leftPageView.meta_width();
-            }
-            else {
+            } else {
                 //normalize by height
                 _contentMetaSize.width = _leftPageView.meta_width() + _rightPageView.meta_width() * (_leftPageView.meta_height() / _rightPageView.meta_height());
                 _contentMetaSize.height = _leftPageView.meta_height();
                 _contentMetaSize.separatorPosition = _leftPageView.meta_width();
             }
-        }
-        else if(_leftPageView.isDisplaying()) {
+        } else if (_leftPageView.isDisplaying()) {
             _contentMetaSize.width = _leftPageView.meta_width() * 2;
             _contentMetaSize.height = _leftPageView.meta_height();
             _contentMetaSize.separatorPosition = _leftPageView.meta_width();
-        }
-        else if(_rightPageView.isDisplaying()) {
+        } else if (_rightPageView.isDisplaying()) {
             _contentMetaSize.width = _rightPageView.meta_width() * 2;
             _contentMetaSize.height = _rightPageView.meta_height();
             _contentMetaSize.separatorPosition = _rightPageView.meta_width();
-        }
-        else {
+        } else {
             _contentMetaSize = undefined;
         }
 
@@ -489,9 +505,9 @@ var FixedView = function(options, reader){
     }
 
     // dir: 0 => new or same page, 1 => previous, 2 => next
-    this.openPage =  function(paginationRequest, dir) {
+    this.openPage = function(paginationRequest, dir) {
 
-        if(!paginationRequest.spineItem) {
+        if (!paginationRequest.spineItem) {
             return;
         }
 
@@ -502,13 +518,13 @@ var FixedView = function(options, reader){
         var isSyntheticSpread = Helpers.deduceSyntheticSpread(_$viewport, paginationRequest.spineItem, _viewSettings) == true; // force boolean value (from truthy/falsey return value)
         _spread.setSyntheticSpread(isSyntheticSpread);
         _spread.openItem(paginationRequest.spineItem);
-        
+
         var hasChanged = leftItem !== _spread.leftItem || rightItem !== _spread.rightItem || centerItem !== _spread.centerItem;
-        
+
         if (dir === null || typeof dir === "undefined") dir = 0;
-        
+
         updatePageSwitchDir(dir === 0 ? 0 : (_spread.spine.isRightToLeft() ? (dir === 1 ? 2 : 1) : dir), hasChanged);
-        
+
         redraw(paginationRequest.initiator, paginationRequest);
     };
 
@@ -516,18 +532,18 @@ var FixedView = function(options, reader){
     this.openPagePrev = function(initiator) {
 
         _spread.openPrev();
-        
+
         updatePageSwitchDir(_spread.spine.isRightToLeft() ? 2 : 1, true);
-        
+
         redraw(initiator, undefined);
     };
 
     this.openPageNext = function(initiator) {
 
         _spread.openNext();
-        
+
         updatePageSwitchDir(_spread.spine.isRightToLeft() ? 1 : 2, true);
-        
+
         redraw(initiator, undefined);
     };
 
@@ -535,29 +551,28 @@ var FixedView = function(options, reader){
 
         var dfd = $.Deferred();
 
-        if(!item) {
-            if(pageView.isDisplaying()) {
+        if (!item) {
+            if (pageView.isDisplaying()) {
                 pageView.remove();
             }
 
             dfd.resolve();
-        }
-        else {
+        } else {
 
             //if(pageView.isDisplaying()) { // always DO (no iframe reuse, as this creates problems with BlobURIs, and navigator history ... just like the reflowable view, we re-create an iframe from the template whenever needed for a new spine item URI)
             pageView.remove();
-            
+
             //if(!pageView.isDisplaying()) { // always TRUE
             _$el.append(pageView.render().element());
             context.isElementAdded = true;
-        
 
-            pageView.loadSpineItem(item, function(success, $iframe, spineItem, isNewContentDocumentLoaded, context){
 
-                if(success && isNewContentDocumentLoaded) {
+            pageView.loadSpineItem(item, function(success, $iframe, spineItem, isNewContentDocumentLoaded, context) {
+
+                if (success && isNewContentDocumentLoaded) {
 
                     //if we a re loading fixed view meta size should be defined
-                    if(!pageView.meta_height() || !pageView.meta_width()) {
+                    if (!pageView.meta_height() || !pageView.meta_width()) {
                         console.error("Invalid document " + spineItem.href + ": viewport is not specified!");
                     }
 
@@ -579,11 +594,11 @@ var FixedView = function(options, reader){
 
         var spreadItems = [_spread.leftItem, _spread.rightItem, _spread.centerItem];
 
-        for(var i = 0; i < spreadItems.length; i++) {
+        for (var i = 0; i < spreadItems.length; i++) {
 
             var spreadItem = spreadItems[i];
 
-            if(spreadItem) {
+            if (spreadItem) {
                 paginationInfo.addOpenPage(0, 1, spreadItem.idref, spreadItem.index);
             }
         }
@@ -609,17 +624,16 @@ var FixedView = function(options, reader){
 
         var viewsToCheck = [];
 
-        if( _spine.isLeftToRight() ) {
+        if (_spine.isLeftToRight()) {
             viewsToCheck = [_leftPageView, _centerPageView, _rightPageView];
-        }
-        else {
+        } else {
             viewsToCheck = [_rightPageView, _centerPageView, _leftPageView];
         }
 
         var views = [];
 
-        for(var i = 0, count = viewsToCheck.length; i < count; i++) {
-            if(viewsToCheck[i].isDisplaying()) {
+        for (var i = 0, count = viewsToCheck.length; i < count; i++) {
+            if (viewsToCheck[i].isDisplaying()) {
                 views.push(viewsToCheck[i]);
             }
         }
@@ -647,16 +661,16 @@ var FixedView = function(options, reader){
         return undefined;
     }
 
-    this.getElement = function (spineItemIdref, selector) {
+    this.getElement = function(spineItemIdref, selector) {
 
-        return callOnPageView(spineItemIdref, function (view) {
+        return callOnPageView(spineItemIdref, function(view) {
             return view.getElement(spineItemIdref, selector);
         });
     };
 
-    this.getElementById = function (spineItemIdref, id) {
+    this.getElementById = function(spineItemIdref, id) {
 
-        return callOnPageView(spineItemIdref, function (view) {
+        return callOnPageView(spineItemIdref, function(view) {
             return view.getElementById(spineItemIdref, id);
         });
     };
@@ -664,16 +678,16 @@ var FixedView = function(options, reader){
 
     this.getElementByCfi = function(spineItemIdref, cfi, classBlacklist, elementBlacklist, idBlacklist) {
 
-        return callOnPageView(spineItemIdref, function (view) {
+        return callOnPageView(spineItemIdref, function(view) {
             return view.getElementByCfi(spineItemIdref, cfi, classBlacklist, elementBlacklist, idBlacklist);
         });
     };
-    
+
     this.getFirstVisibleMediaOverlayElement = function() {
 
         var views = getDisplayingViews();
 
-        for(var i = 0, count = views.length; i < count; i++) {
+        for (var i = 0, count = views.length; i < count; i++) {
             var el = views[i].getFirstVisibleMediaOverlayElement();
             if (el) return el;
         }
@@ -686,27 +700,27 @@ var FixedView = function(options, reader){
         //TODO: during zoom+pan, playing element might not actually be visible
 
     };
-    
+
     this.getElements = function(spineItemIdref, selector) {
 
-        return callOnPageView(spineItemIdref, function (view) {
+        return callOnPageView(spineItemIdref, function(view) {
             return view.getElements(spineItemIdref, selector);
         });
     };
-    
-    this.isElementVisible = function($element){
+
+    this.isElementVisible = function($element) {
 
         //for now we assume that for fixed layouts, elements are always visible
         return true;
     };
-    
+
     this.getVisibleElementsWithFilter = function(filterFunction, includeSpineItems) {
 
         var elements = [];
 
         var views = getDisplayingViews();
 
-        for(var i = 0, count = views.length; i < count; i++) {
+        for (var i = 0, count = views.length; i < count; i++) {
             //for now we assume that for fixed layouts, elements are always visible
             elements.push(views[i].getAllElementsWithFilter(filterFunction, includeSpineItems));
         }
@@ -714,7 +728,7 @@ var FixedView = function(options, reader){
         return elements;
     };
 
-    this.getVisibleElements = function (selector, includeSpineItems) {
+    this.getVisibleElements = function(selector, includeSpineItems) {
 
         var elements = [];
 
@@ -723,7 +737,10 @@ var FixedView = function(options, reader){
         for (var i = 0, count = views.length; i < count; i++) {
             //for now we assume that for fixed layouts, elements are always visible
             if (includeSpineItems) {
-                elements.push({elements: views[i].getElements(views[i].currentSpineItem().idref, selector), spineItem: views[i].currentSpineItem()});
+                elements.push({
+                    elements: views[i].getElements(views[i].currentSpineItem().idref, selector),
+                    spineItem: views[i].currentSpineItem()
+                });
             } else {
                 elements.push(views[i].getElements(views[i].currentSpineItem().idref, selector));
             }
@@ -732,29 +749,29 @@ var FixedView = function(options, reader){
         return elements;
     };
 
-    this.isElementVisible = function($element){
+    this.isElementVisible = function($element) {
 
         //for now we assume that for fixed layouts, elements are always visible
         return true;
     };
-    
-    this.isVisibleSpineItemElementCfi = function (spineItemIdref, partialCfi) {
 
-        return callOnPageView(spineItemIdref, function (view) {
+    this.isVisibleSpineItemElementCfi = function(spineItemIdref, partialCfi) {
+
+        return callOnPageView(spineItemIdref, function(view) {
             //for now we assume that for fixed layouts, everything is always visible
             return true;
         });
     };
 
-    this.getNodeRangeInfoFromCfi = function (spineItemIdref, partialCfi) {
+    this.getNodeRangeInfoFromCfi = function(spineItemIdref, partialCfi) {
 
-        return callOnPageView(spineItemIdref, function (view) {
+        return callOnPageView(spineItemIdref, function(view) {
             return view.getNodeRangeInfoFromCfi(spineItemIdref, partialCfi);
         });
     };
 
 
-    this.getFirstVisibleCfi = function () {
+    this.getFirstVisibleCfi = function() {
         var views = getDisplayingViews();
         if (views.length > 0) {
             return views[0].getFirstVisibleCfi();
@@ -762,7 +779,7 @@ var FixedView = function(options, reader){
         return undefined;
     };
 
-    this.getLastVisibleCfi = function () {
+    this.getLastVisibleCfi = function() {
         var views = getDisplayingViews();
         if (views.length > 0) {
             return views[views.length - 1].getLastVisibleCfi();
@@ -770,44 +787,44 @@ var FixedView = function(options, reader){
         return undefined;
     };
 
-    this.getDomRangesFromRangeCfi = function (rangeCfi, rangeCfi2, inclusive) {
-        var views = getDisplayingViews();
-        if (rangeCfi2 && rangeCfi.idref !== rangeCfi2.idref) {
-            var ranges = [];
+    this.getDomRangesFromRangeCfi = function(rangeCfi, rangeCfi2, inclusive) {
+            var views = getDisplayingViews();
+            if (rangeCfi2 && rangeCfi.idref !== rangeCfi2.idref) {
+                var ranges = [];
+                for (var i = 0, count = views.length; i < count; i++) {
+                    var view = views[i];
+                    if (view.currentSpineItem().idref === rangeCfi.idref) {
+                        var last = view.getLastVisibleCfi();
+                        ranges.push(view.getDomRangeFromRangeCfi(rangeCfi.contentCFI, last.contentCFI, inclusive));
+                    } else if (view.currentSpineItem().idref === rangeCfi2.idref) {
+                        var first = view.getFirstVisibleCfi();
+                        ranges.push(view.getDomRangeFromRangeCfi(first.contentCFI, rangeCfi2.contentCFI, inclusive));
+                    }
+                }
+                return ranges;
+            }
+
+            return [this.getDomRangeFromRangeCfi(rangeCfi, rangeCfi2, inclusive)];
+        },
+
+        this.getDomRangeFromRangeCfi = function(rangeCfi, rangeCfi2, inclusive) {
+            var views = getDisplayingViews();
+            if (rangeCfi2 && rangeCfi.idref !== rangeCfi2.idref) {
+                console.error("getDomRangeFromRangeCfi: both CFIs must be scoped under the same spineitem idref");
+                return undefined;
+            }
             for (var i = 0, count = views.length; i < count; i++) {
+
                 var view = views[i];
                 if (view.currentSpineItem().idref === rangeCfi.idref) {
-                    var last = view.getLastVisibleCfi();
-                    ranges.push(view.getDomRangeFromRangeCfi(rangeCfi.contentCFI, last.contentCFI, inclusive));
-                } else if (view.currentSpineItem().idref === rangeCfi2.idref) {
-                    var first = view.getFirstVisibleCfi();
-                    ranges.push(view.getDomRangeFromRangeCfi(first.contentCFI, rangeCfi2.contentCFI, inclusive));
+                    return view.getDomRangeFromRangeCfi(rangeCfi.contentCFI, rangeCfi2 ? rangeCfi2.contentCFI : null, inclusive);
                 }
             }
-            return ranges;
-        }
 
-        return [this.getDomRangeFromRangeCfi(rangeCfi, rangeCfi2, inclusive)];
-    },
-
-    this.getDomRangeFromRangeCfi = function (rangeCfi, rangeCfi2, inclusive) {
-        var views = getDisplayingViews();
-        if (rangeCfi2 && rangeCfi.idref !== rangeCfi2.idref) {
-            console.error("getDomRangeFromRangeCfi: both CFIs must be scoped under the same spineitem idref");
             return undefined;
-        }
-        for (var i = 0, count = views.length; i < count; i++) {
+        };
 
-            var view = views[i];
-            if (view.currentSpineItem().idref === rangeCfi.idref) {
-                return view.getDomRangeFromRangeCfi(rangeCfi.contentCFI, rangeCfi2 ? rangeCfi2.contentCFI : null, inclusive);
-            }
-        }
-
-        return undefined;
-    };
-
-    this.getRangeCfiFromDomRange = function (domRange) {
+    this.getRangeCfiFromDomRange = function(domRange) {
 
         var views = getDisplayingViews();
 
@@ -822,25 +839,25 @@ var FixedView = function(options, reader){
         return undefined;
     };
 
-    this.getVisibleCfiFromPoint = function (x, y, precisePoint, spineItemIdref) {
+    this.getVisibleCfiFromPoint = function(x, y, precisePoint, spineItemIdref) {
         if (!spineItemIdref) {
             throw new Error("getVisibleCfiFromPoint: Spine item idref must be specified for this fixed layout view.");
         }
-        return callOnPageView(spineItemIdref, function (view) {
-            return view.getVisibleCfiFromPoint(x,y, precisePoint);
+        return callOnPageView(spineItemIdref, function(view) {
+            return view.getVisibleCfiFromPoint(x, y, precisePoint);
         });
     };
 
-    this.getRangeCfiFromPoints = function (startX, startY, endX, endY, spineItemIdref) {
+    this.getRangeCfiFromPoints = function(startX, startY, endX, endY, spineItemIdref) {
         if (!spineItemIdref) {
             throw new Error("getRangeCfiFromPoints: Spine item idref must be specified for this fixed layout view.");
         }
-        return callOnPageView(spineItemIdref, function (view) {
+        return callOnPageView(spineItemIdref, function(view) {
             return view.getRangeCfiFromPoints(startX, startY, endX, endY);
         });
     };
 
-    this.getCfiForElement = function (element) {
+    this.getCfiForElement = function(element) {
 
         var views = getDisplayingViews();
 
@@ -855,20 +872,20 @@ var FixedView = function(options, reader){
         return undefined;
     };
 
-    this.getElementFromPoint = function (x, y, spineItemIdref) {
+    this.getElementFromPoint = function(x, y, spineItemIdref) {
         if (!spineItemIdref) {
             throw new Error("getElementFromPoint: Spine item idref must be specified for this fixed layout view.");
         }
-        return callOnPageView(spineItemIdref, function (view) {
-            return view.getElementFromPoint(x,y);
+        return callOnPageView(spineItemIdref, function(view) {
+            return view.getElementFromPoint(x, y);
         });
     };
 
-    this.getStartCfi = function () {
+    this.getStartCfi = function() {
         return getDisplayingViews()[0].getStartCfi();
     };
 
-    this.getEndCfi = function () {
+    this.getEndCfi = function() {
         return getDisplayingViews()[0].getEndCfi();
     };
 
@@ -886,5 +903,4 @@ var FixedView = function(options, reader){
     };
 
 };
-    return FixedView;
-});
+export default FixedView;

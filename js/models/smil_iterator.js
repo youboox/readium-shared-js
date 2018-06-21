@@ -1,8 +1,4 @@
-//  LauncherOSX
-//
-//  Created by Boris Schneiderman.
-//  Modified by Daniel Weck
-//  Copyright (c) 2016 Readium Foundation and/or its licensees. All rights reserved.
+//  Copyright (c) 2018 Readium Foundation and/or its licensees. All rights reserved.
 //  
 //  Redistribution and use in source and binary forms, with or without modification, 
 //  are permitted provided that the following conditions are met:
@@ -25,7 +21,9 @@
 //  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
-define (["jquery", "../helpers"], function($, Helpers) {
+
+import $ from "jquery";
+import Helpers from "../helpers";
 /**
  * Wrapper of a smil iterator object. 
  * A smil iterator is used by the media overlay player, to move along text areas which have an audio overlay. 
@@ -37,7 +35,7 @@ define (["jquery", "../helpers"], function($, Helpers) {
  */
 var SmilIterator = function(smil) {
 
-   /**
+    /**
      * The smil model
      *
      * @property smil
@@ -51,7 +49,7 @@ var SmilIterator = function(smil) {
      * @property currentPar
      * @type object
      */
-     
+
     this.currentPar = undefined;
 
     /**
@@ -72,21 +70,21 @@ var SmilIterator = function(smil) {
         return par;
     };
     */
-//
-//    this.ensureNextValidTextElement = function()
-//    {
-//        if (!this.currentPar)
-//        {
-//            console.debug("Par iterator is out of range");
-//            return;
-//        }
-//
-//        while (this.currentPar && !this.currentPar.element)
-//        {
-//            this.next();
-//        }
-//    };
-    
+    //
+    //    this.ensureNextValidTextElement = function()
+    //    {
+    //        if (!this.currentPar)
+    //        {
+    //            console.debug("Par iterator is out of range");
+    //            return;
+    //        }
+    //
+    //        while (this.currentPar && !this.currentPar.element)
+    //        {
+    //            this.next();
+    //        }
+    //    };
+
     /**
      * Looks for a text smil node identified by the id parameter 
      * Returns true if the id param identifies a text smil node.
@@ -95,23 +93,18 @@ var SmilIterator = function(smil) {
      * @param      {Number} id A smil node identifier
      * @return     {Boolean} 
      */
-    this.findTextId = function(id)
-    {
-        if (!this.currentPar)
-        {
+    this.findTextId = function(id) {
+        if (!this.currentPar) {
             console.debug("Par iterator is out of range");
             return;
         }
 
-        if (!id)
-        {
+        if (!id) {
             return false;
         }
 
-        while (this.currentPar)
-        {
-            if (this.currentPar.element)
-            {
+        while (this.currentPar) {
+            if (this.currentPar.element) {
                 if (id === this.currentPar.text.srcFragmentId) //this.currentPar.element.id
                 {
                     return true;
@@ -119,10 +112,8 @@ var SmilIterator = function(smil) {
 
                 // OUTER match
                 var parent = this.currentPar.element.parentNode;
-                while(parent)
-                {
-                    if (parent.id && parent.id == id)
-                    {
+                while (parent) {
+                    if (parent.id && parent.id == id) {
                         return true;
                     }
 
@@ -133,8 +124,7 @@ var SmilIterator = function(smil) {
                 // INNER match
                 //var inside = this.currentPar.element.ownerDocument.getElementById(id);
                 var inside = $("#" + Helpers.escapeJQuerySelector(id), this.currentPar.element);
-                if (inside && inside.length && inside[0])
-                {
+                if (inside && inside.length && inside[0]) {
                     return true;
                 }
             }
@@ -153,7 +143,7 @@ var SmilIterator = function(smil) {
 
     this.next = function() {
 
-        if(!this.currentPar) {
+        if (!this.currentPar) {
             console.debug("Par iterator is out of range");
             return;
         }
@@ -169,7 +159,7 @@ var SmilIterator = function(smil) {
 
     this.previous = function() {
 
-        if(!this.currentPar) {
+        if (!this.currentPar) {
             console.debug("Par iterator is out of range");
             return;
         }
@@ -186,13 +176,12 @@ var SmilIterator = function(smil) {
 
     this.isLast = function() {
 
-        if(!this.currentPar) {
+        if (!this.currentPar) {
             console.debug("Par iterator is out of range");
             return;
         }
 
-        if (findParNode(this.currentPar.index + 1, this.currentPar.parent, false))
-        {
+        if (findParNode(this.currentPar.index + 1, this.currentPar.parent, false)) {
             return false;
         }
 
@@ -207,10 +196,10 @@ var SmilIterator = function(smil) {
      * @return     {Boolean} 
      */
 
-    this.goToPar =  function(par) {
+    this.goToPar = function(par) {
 
-        while(this.currentPar) {
-            if(this.currentPar == par) {
+        while (this.currentPar) {
+            if (this.currentPar == par) {
                 break;
             }
 
@@ -230,24 +219,22 @@ var SmilIterator = function(smil) {
 
     function findParNode(startIndex, container, previous) {
 
-        for(var i = startIndex, count = container.children.length;
-            i >= 0 && i < count;
-            i += (previous ? -1 : 1)) {
+        for (var i = startIndex, count = container.children.length; i >= 0 && i < count; i += (previous ? -1 : 1)) {
 
             var node = container.children[i];
-            if(node.nodeType == "par") {
+            if (node.nodeType == "par") {
                 return node;
             }
 
             // assert(node.nodeType == "seq")
             node = findParNode(previous ? node.children.length - 1 : 0, node, previous);
 
-            if(node) {
+            if (node) {
                 return node;
             }
         }
 
-        if(container.parent) {
+        if (container.parent) {
             return findParNode(container.index + (previous ? -1 : 1), container.parent, previous);
         }
 
@@ -257,5 +244,4 @@ var SmilIterator = function(smil) {
     this.reset();
 };
 
-return SmilIterator;
-});
+export default SmilIterator;

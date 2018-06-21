@@ -1,9 +1,4 @@
-//
-//  Created by Juan Corona
-//  Based on original proposal by Mickaël Menu
-//  Portions adapted from Rangy's Module system: Copyright (c) 2014 Tim Down
-//
-//  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
+//  Copyright (c) 2018 Readium Foundation and/or its licensees. All rights reserved.
 //
 //  Redistribution and use in source and binary forms, with or without modification,
 //  are permitted provided that the following conditions are met:
@@ -27,85 +22,87 @@
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-define(["jquery", "underscore", "eventEmitter"], function ($, _, EventEmitter) {
+import $ from "jquery";
+import _ from "underscore";
+import EventEmitter from "eventEmitter";
 
-    var _registeredPlugins = {};
+var _registeredPlugins = {};
 
-    /**
-     * A  plugins controller used to easily add plugins from the host app, eg.
-     * ReadiumSDK.Plugins.register("footnotes", function(api){ ... });
-     *
-     * @constructor
-     */
-    var PluginsController = function () {
-        var self = this;
+/**
+ * A  plugins controller used to easily add plugins from the host app, eg.
+ * ReadiumSDK.Plugins.register("footnotes", function(api){ ... });
+ *
+ * @constructor
+ */
+var PluginsController = function() {
+    var self = this;
 
 
-        this.initialize = function (reader) {
-            var apiFactory = new PluginApiFactory(reader);
+    this.initialize = function(reader) {
+        var apiFactory = new PluginApiFactory(reader);
 
-            if (!reader.plugins) {
-                //attach an object to the reader that will be
-                // used for plugin namespaces and their extensions
-                reader.plugins = {};
-            } else {
-                throw new Error("Already initialized on reader!");
-            }
-            _.each(_registeredPlugins, function (plugin) {
-                plugin.init(apiFactory);
-            });
-        };
-
-        this.getLoadedPlugins = function() {
-            return _registeredPlugins;
-        };
-
-        // Creates a new instance of the given plugin constructor.
-        this.register = function (name, optDependencies, initFunc) {
-
-            if (_registeredPlugins[name]) {
-                throw new Error("Duplicate registration for plugin with name: " + name);
-            }
-
-            var dependencies;
-            if (typeof optDependencies === 'function') {
-                initFunc = optDependencies;
-            } else {
-                dependencies = optDependencies;
-            }
-
-            _registeredPlugins[name] = new Plugin(name, dependencies, function(plugin, api) {
-                if (!plugin.initialized || !api.host.plugins[plugin.name]) {
-                    plugin.initialized = true;
-                    try {
-                        var pluginContext = {};
-                        $.extend(pluginContext, new EventEmitter());
-
-                        initFunc.call(pluginContext, api.instance);
-                        plugin.supported = true;
-
-                        api.host.plugins[plugin.name] = pluginContext;
-                    } catch (ex) {
-                        plugin.fail(ex);
-                    }
-                }
-            });
-        };
+        if (!reader.plugins) {
+            //attach an object to the reader that will be
+            // used for plugin namespaces and their extensions
+            reader.plugins = {};
+        } else {
+            throw new Error("Already initialized on reader!");
+        }
+        _.each(_registeredPlugins, function(plugin) {
+            plugin.init(apiFactory);
+        });
     };
 
-    function PluginApi(reader, plugin) {
-        this.reader = reader;
-        this.plugin = plugin;
-    }
+    this.getLoadedPlugins = function() {
+        return _registeredPlugins;
+    };
 
-    function PluginApiFactory(reader) {
-        this.create = function (plugin) {
-            return {
-                host: reader,
-                instance: new PluginApi(reader, plugin)
-            };
+    // Creates a new instance of the given plugin constructor.
+    this.register = function(name, optDependencies, initFunc) {
+
+        if (_registeredPlugins[name]) {
+            throw new Error("Duplicate registration for plugin with name: " + name);
+        }
+
+        var dependencies;
+        if (typeof optDependencies === 'function') {
+            initFunc = optDependencies;
+        } else {
+            dependencies = optDependencies;
+        }
+
+        _registeredPlugins[name] = new Plugin(name, dependencies, function(plugin, api) {
+            if (!plugin.initialized || !api.host.plugins[plugin.name]) {
+                plugin.initialized = true;
+                try {
+                    var pluginContext = {};
+                    $.extend(pluginContext, new EventEmitter());
+
+                    initFunc.call(pluginContext, api.instance);
+                    plugin.supported = true;
+
+                    api.host.plugins[plugin.name] = pluginContext;
+                } catch (ex) {
+                    plugin.fail(ex);
+                }
+            }
+        });
+    };
+};
+
+function PluginApi(reader, plugin) {
+    this.reader = reader;
+    this.plugin = plugin;
+}
+
+function PluginApiFactory(reader) {
+    this.create = function(plugin) {
+        return {
+            host: reader,
+            instance: new PluginApi(reader, plugin)
         };
-    }
+    };
+}
 
 //
 //  The following is adapted from Rangy's Module class:
@@ -131,56 +128,54 @@ define(["jquery", "underscore", "eventEmitter"], function ($, _, EventEmitter) {
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
-    function Plugin(name, dependencies, initializer) {
-        this.name = name;
-        this.dependencies = dependencies;
-        this.initialized = false;
-        this.supported = false;
-        this.initializer = initializer;
-    }
+function Plugin(name, dependencies, initializer) {
+    this.name = name;
+    this.dependencies = dependencies;
+    this.initialized = false;
+    this.supported = false;
+    this.initializer = initializer;
+}
 
-    Plugin.prototype = {
-        init: function (apiFactory) {
-            var requiredPluginNames = this.dependencies || [];
-            for (var i = 0, len = requiredPluginNames.length, requiredPlugin, PluginName; i < len; ++i) {
-                PluginName = requiredPluginNames[i];
+Plugin.prototype = {
+    init: function(apiFactory) {
+        var requiredPluginNames = this.dependencies || [];
+        for (var i = 0, len = requiredPluginNames.length, requiredPlugin, PluginName; i < len; ++i) {
+            PluginName = requiredPluginNames[i];
 
-                requiredPlugin = _registeredPlugins[PluginName];
-                if (!requiredPlugin || !(requiredPlugin instanceof Plugin)) {
-                    throw new Error("required Plugin '" + PluginName + "' not found");
-                }
-
-                requiredPlugin.init(apiFactory);
-
-                if (!requiredPlugin.supported) {
-                    throw new Error("required Plugin '" + PluginName + "' not supported");
-                }
+            requiredPlugin = _registeredPlugins[PluginName];
+            if (!requiredPlugin || !(requiredPlugin instanceof Plugin)) {
+                throw new Error("required Plugin '" + PluginName + "' not found");
             }
 
-            // Now run initializer
-            this.initializer(this, apiFactory.create(this));
-        },
+            requiredPlugin.init(apiFactory);
 
-        fail: function (reason) {
-            this.initialized = true;
-            this.supported = false;
-            throw new Error("Plugin '" + this.name + "' failed to load: " + reason);
-        },
-
-        warn: function (msg) {
-            console.warn("Plugin " + this.name + ": " + msg);
-        },
-
-        deprecationNotice: function (deprecated, replacement) {
-            console.warn("DEPRECATED: " + deprecated + " in Plugin " + this.name + "is deprecated. Please use "
-            + replacement + " instead");
-        },
-
-        createError: function (msg) {
-            return new Error("Error in " + this.name + " Plugin: " + msg);
+            if (!requiredPlugin.supported) {
+                throw new Error("required Plugin '" + PluginName + "' not supported");
+            }
         }
-    };
 
-    var instance = new PluginsController();
-    return instance;
-});
+        // Now run initializer
+        this.initializer(this, apiFactory.create(this));
+    },
+
+    fail: function(reason) {
+        this.initialized = true;
+        this.supported = false;
+        throw new Error("Plugin '" + this.name + "' failed to load: " + reason);
+    },
+
+    warn: function(msg) {
+        console.warn("Plugin " + this.name + ": " + msg);
+    },
+
+    deprecationNotice: function(deprecated, replacement) {
+        console.warn("DEPRECATED: " + deprecated + " in Plugin " + this.name + "is deprecated. Please use " + replacement + " instead");
+    },
+
+    createError: function(msg) {
+        return new Error("Error in " + this.name + " Plugin: " + msg);
+    }
+};
+
+var instance = new PluginsController();
+export default instance;
