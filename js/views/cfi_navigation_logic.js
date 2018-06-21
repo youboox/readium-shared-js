@@ -40,7 +40,7 @@ import * as EPUBcfi from 'readium-cfi-js';
 var CfiNavigationLogic = function(options) {
     var self = this;
     options = options || {};
-
+    var _DEBUG = false;
     // var _DEBUG = ReadiumSDK.DEBUG_MODE;
     // if (_DEBUG) {
     //     window.top._DEBUG_visibleTextRangeOffsetsRuns = window.top._DEBUG_visibleTextRangeOffsetsRuns || [];
