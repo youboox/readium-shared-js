@@ -16826,6 +16826,21 @@ var ReflowableView = function(options, reader){
             return paginationInfo;
         }
 
+        // DEBUG Recalculate columnCount before sending paginationInfo
+        var dim = (_htmlBodyIsVerticalWritingMode ? _$epubHtml[0].scrollHeight : _$epubHtml[0].scrollWidth);
+        if (dim == 0) {
+            console.error("Document dimensions zero?!");
+            return paginationInfo;
+        }
+
+        _paginationInfo.columnCount = (dim + _paginationInfo.pageOffset + _paginationInfo.columnGap) / (_paginationInfo.columnWidth + _paginationInfo.columnGap);
+        _paginationInfo.columnCount = Math.round(_paginationInfo.columnCount);
+        if (_paginationInfo.columnCount == 0 || _paginationInfo.columnWidth == 0) {
+            console.error("Column count zero?!");
+            return paginationInfo;
+        }
+        // END Recalculate columnCount before sending paginationInfo
+
         var pageIndexes = getOpenPageIndexes();
 
         for(var i = 0, count = pageIndexes.length; i < count; i++) {
@@ -18888,7 +18903,7 @@ var ReaderView = function (options) {
 
         if (!ReadiumSDK) return;
 
-        var DEBUG = true; // change this to visualize the CFI range
+        var DEBUG = false; // change this to visualize the CFI range
         if (!DEBUG) return;
             
         var paginationInfo = this.getPaginationInfo();
