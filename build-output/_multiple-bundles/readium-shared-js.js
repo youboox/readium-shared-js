@@ -16867,21 +16867,6 @@ var ReflowableView = function(options, reader){
 
     }
 
-    function getOpenPageIndexes() {
-
-        var indexes = [];
-
-        var currentPage = _paginationInfo.currentSpreadIndex * _paginationInfo.visibleColumnCount;
-
-        for(var i = 0; i < _paginationInfo.visibleColumnCount && (currentPage + i) < _paginationInfo.columnCount; i++) {
-
-            indexes.push(currentPage + i);
-        }
-
-        return indexes;
-
-    }
-
     //we need this styles for css columnizer not to chop big images
     function resizeImages() {
 
